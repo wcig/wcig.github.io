@@ -79,14 +79,14 @@
 
 
 
-<meta name="description" content="Go 环境搭建  1. 下载下载地址：The Go Programming Language Win10：go1.12.5.windows-amd64.msi Linux：go1.12.5.linux-amd64.tar.gz Mac：go1.12.5.darwin-amd64.pkg 2. 安装Win10, Mac 下直接安装即可 Linux下如下操作： 123456789$ sudo tar">
+<meta name="description" content="1. 下载下载地址：The Go Programming Language Win10：go1.12.5.windows-amd64.msi Linux：go1.12.5.linux-amd64.tar.gz Mac：go1.12.5.darwin-amd64.pkg 2. 安装Win10, Mac 下直接安装即可 Linux下如下操作： 123456789$ sudo tar -C &#x2F;usr&#x2F;l">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Go环境搭建">
-<meta property="og:url" content="https://wcig.github.io/2019/06/11/Go%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/index.html">
+<meta property="og:url" content="https://wcig.github.io/2019/06/11/golang/01.Go%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/index.html">
 <meta property="og:site_name" content="Wcig&#39;s Blog">
-<meta property="og:description" content="Go 环境搭建  1. 下载下载地址：The Go Programming Language Win10：go1.12.5.windows-amd64.msi Linux：go1.12.5.linux-amd64.tar.gz Mac：go1.12.5.darwin-amd64.pkg 2. 安装Win10, Mac 下直接安装即可 Linux下如下操作： 123456789$ sudo tar">
+<meta property="og:description" content="1. 下载下载地址：The Go Programming Language Win10：go1.12.5.windows-amd64.msi Linux：go1.12.5.linux-amd64.tar.gz Mac：go1.12.5.darwin-amd64.pkg 2. 安装Win10, Mac 下直接安装即可 Linux下如下操作： 123456789$ sudo tar -C &#x2F;usr&#x2F;l">
 <meta property="article:published_time" content="2019-06-10T16:13:00.000Z">
-<meta property="article:modified_time" content="2019-06-11T16:14:05.000Z">
+<meta property="article:modified_time" content="2020-06-28T10:18:55.078Z">
 <meta property="article:author" content="Wcig">
 <meta property="article:tag" content="Golang">
 <meta name="twitter:card" content="summary">
@@ -119,7 +119,7 @@
 
 
 
-  <link rel="canonical" href="https://wcig.github.io/2019/06/11/Go环境搭建/"/>
+  <link rel="canonical" href="https://wcig.github.io/2019/06/11/golang/01.Go环境搭建/"/>
 
 
 
@@ -252,7 +252,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://wcig.github.io/2019/06/11/Go%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">
+    <link itemprop="mainEntityOfPage" href="https://wcig.github.io/2019/06/11/golang/01.Go%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Wcig">
@@ -341,10 +341,7 @@
       
 
       
-        <blockquote>
-<p>Go 环境搭建</p>
-</blockquote>
-<h3 id="1-下载"><a href="#1-下载" class="headerlink" title="1. 下载"></a>1. 下载</h3><p>下载地址：<a href="https://www.baidu.com/link?url=I4Lf8FzFSGZhXJTVbFFAA2Ok5bm7UTm5-aKuITPclBXJ23HbMMXo5vzY-A59QOE6&wd=&eqid=dd38de890004ed72000000035cffce62" target="_blank" rel="noopener">The <em>Go</em> Programming Language</a></p>
+        <h3 id="1-下载"><a href="#1-下载" class="headerlink" title="1. 下载"></a>1. 下载</h3><p>下载地址：<a href="https://www.baidu.com/link?url=I4Lf8FzFSGZhXJTVbFFAA2Ok5bm7UTm5-aKuITPclBXJ23HbMMXo5vzY-A59QOE6&wd=&eqid=dd38de890004ed72000000035cffce62" target="_blank" rel="noopener">The <em>Go</em> Programming Language</a></p>
 <p>Win10：go1.12.5.windows-amd64.msi</p>
 <p>Linux：go1.12.5.linux-amd64.tar.gz</p>
 <p>Mac：go1.12.5.darwin-amd64.pkg</p>
@@ -354,13 +351,183 @@
 
 
 
+<p>Go安装目录及功能：</p>
+<table>
+<thead>
+<tr>
+<th><strong>目录名</strong></th>
+<th><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>api</td>
+<td>每个版本的 api 变更差异</td>
+</tr>
+<tr>
+<td>bin</td>
+<td>go 源码包编译出的编译器（go）、文档工具（godoc）、格式化工具（gofmt）</td>
+</tr>
+<tr>
+<td>doc</td>
+<td>英文版的 Go 文档</td>
+</tr>
+<tr>
+<td>lib</td>
+<td>引用的一些库文件</td>
+</tr>
+<tr>
+<td>misc</td>
+<td>杂项用途的文件，例如 <a href="http://c.biancheng.net/android/" target="_blank" rel="noopener">Android</a> 平台的编译、git 的提交钩子等</td>
+</tr>
+<tr>
+<td>pkg</td>
+<td>Windows 平台编译好的中间文件</td>
+</tr>
+<tr>
+<td>src</td>
+<td>标准库的源码</td>
+</tr>
+<tr>
+<td>test</td>
+<td>测试用例</td>
+</tr>
+</tbody></table>
+<h3 id="3-验证"><a href="#3-验证" class="headerlink" title="3. 验证"></a>3. 验证</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> go version</span></span><br><span class="line">go version go1.12.5 darwin/amd64</span><br><span class="line"></span><br><span class="line"><span class="meta">$</span><span class="bash"> go env</span></span><br><span class="line">GOARCH="amd64"  #机器处理器架构</span><br><span class="line">GOBIN=""  #存放可执行文件目录的绝对路径</span><br><span class="line">GOCACHE="/Users/yangbo/Library/Caches/go-build"</span><br><span class="line">GOEXE=""  #可执行文件后缀</span><br><span class="line">GOFLAGS=""</span><br><span class="line">GOHOSTARCH="amd64"  #程序运行环境的目标计算架构</span><br><span class="line">GOHOSTOS="darwin"  #程序运行环境的目标操作系统</span><br><span class="line">GOOS="darwin"  #目标机器操作系统</span><br><span class="line">GOPATH="/Users/yangbo/go"  #go工作区目录</span><br><span class="line">GOPROXY=""</span><br><span class="line">GORACE=""</span><br><span class="line">GOROOT="/usr/local/go"  #go安装位置</span><br><span class="line">GOTMPDIR=""</span><br><span class="line">GOTOOLDIR="/usr/local/go/pkg/tool/darwin_amd64"  #go工具目录</span><br><span class="line">GCCGO="gccgo"</span><br><span class="line">CC="clang"</span><br><span class="line">CXX="clang++"</span><br><span class="line">CGO_ENABLED="1"</span><br><span class="line">GOMOD=""</span><br><span class="line">CGO_CFLAGS="-g -O2"</span><br><span class="line">CGO_CPPFLAGS=""</span><br><span class="line">CGO_CXXFLAGS="-g -O2"</span><br><span class="line">CGO_FFLAGS="-g -O2"</span><br><span class="line">CGO_LDFLAGS="-g -O2"</span><br><span class="line">PKG_CONFIG="pkg-config"</span><br><span class="line">GOGCCFLAGS="-fPIC -m64 -pthread -fno-caret-diagnostics -Qunused-arguments -fmessage-length=0 -fdebug-prefix-map=/var/folders/f3/8j71r4fs6jqflcn06d4s6z9h0000gn/T/go-build767535271=/tmp/go-build -gno-record-gcc-switches -fno-common"</span><br></pre></td></tr></table></figure>
 
 
-<h3 id="3-验证"><a href="#3-验证" class="headerlink" title="3. 验证"></a>3. 验证</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> go version</span></span><br><span class="line">go version go1.12.5 darwin/amd64</span><br><span class="line"></span><br><span class="line"><span class="meta">$</span><span class="bash"> go env</span></span><br><span class="line">GOARCH="amd64"</span><br><span class="line">GOBIN=""</span><br><span class="line">GOCACHE="/Users/yangbo/Library/Caches/go-build"</span><br><span class="line">GOEXE=""</span><br><span class="line">GOFLAGS=""</span><br><span class="line">GOHOSTARCH="amd64"</span><br><span class="line">GOHOSTOS="darwin"</span><br><span class="line">GOOS="darwin"</span><br><span class="line">GOPATH="/Users/yangbo/go"</span><br><span class="line">GOPROXY=""</span><br><span class="line">GORACE=""</span><br><span class="line">GOROOT="/usr/local/go"</span><br><span class="line">GOTMPDIR=""</span><br><span class="line">GOTOOLDIR="/usr/local/go/pkg/tool/darwin_amd64"</span><br><span class="line">GCCGO="gccgo"</span><br><span class="line">CC="clang"</span><br><span class="line">CXX="clang++"</span><br><span class="line">CGO_ENABLED="1"</span><br><span class="line">GOMOD=""</span><br><span class="line">CGO_CFLAGS="-g -O2"</span><br><span class="line">CGO_CPPFLAGS=""</span><br><span class="line">CGO_CXXFLAGS="-g -O2"</span><br><span class="line">CGO_FFLAGS="-g -O2"</span><br><span class="line">CGO_LDFLAGS="-g -O2"</span><br><span class="line">PKG_CONFIG="pkg-config"</span><br><span class="line">GOGCCFLAGS="-fPIC -m64 -pthread -fno-caret-diagnostics -Qunused-arguments -fmessage-length=0 -fdebug-prefix-map=/var/folders/f3/8j71r4fs6jqflcn06d4s6z9h0000gn/T/go-build767535271=/tmp/go-build -gno-record-gcc-switches -fno-common"</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-Go-目录"><a href="#4-Go-目录" class="headerlink" title="4. Go 目录"></a>4. Go 目录</h3><p>GOROOT目录为go依赖保存目录。</p>
+<p>GOPATH下需要建立3个目录：</p>
+<ul>
+<li>bin（存放编译后生成的可执行文件）</li>
+<li>pkg（存放编译后生成的包文件）</li>
+<li>src（存放项目源码）</li>
+</ul>
+<h3 id="5-Go-常用命令"><a href="#5-Go-常用命令" class="headerlink" title="5.Go 常用命令"></a>5.Go 常用命令</h3><ul>
+<li>go get：获取远程依赖包</li>
+<li>go run: 直接运行程序</li>
+<li>go build: 测试编译，检查是否有编译错误</li>
+<li>go fmt：格式化源码</li>
+<li>go install：编译包文件并编译整个程序</li>
+<li>go test：运行测试文件</li>
+<li>go doc： 查看文档</li>
+</ul>
+<h3 id="6-Go-手册"><a href="#6-Go-手册" class="headerlink" title="6.Go 手册"></a>6.Go 手册</h3><p>Go查看手册：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 查看fmt包</span></span><br><span class="line">go doc fmt</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看fmt.Println()方法</span></span><br><span class="line">godoc fmt Println</span><br></pre></td></tr></table></figure>
+
+<p>Go本地手册：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 运行下面命令，即可通过http://localhost:3000访问</span></span><br><span class="line">godoc -http=:3000</span><br></pre></td></tr></table></figure>
 
 
 
-<h3 id="4-环境变量"><a href="#4-环境变量" class="headerlink" title="4. 环境变量"></a>4. 环境变量</h3><p>GOROOT目录为go依赖保存目录。</p>
+<h4 id="7-Go标准库"><a href="#7-Go标准库" class="headerlink" title="7. Go标准库"></a>7. Go标准库</h4><table>
+<thead>
+<tr>
+<th><strong>Go语言标准库包名</strong></th>
+<th><strong>功</strong>  <strong>能</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>bufio</td>
+<td>带缓冲的 I/O 操作</td>
+</tr>
+<tr>
+<td>bytes</td>
+<td>实现字节操作</td>
+</tr>
+<tr>
+<td>container</td>
+<td>封装堆、列表和环形列表等容器</td>
+</tr>
+<tr>
+<td>crypto</td>
+<td>加密算法</td>
+</tr>
+<tr>
+<td>database</td>
+<td>数据库驱动和接口</td>
+</tr>
+<tr>
+<td>debug</td>
+<td>各种调试文件格式访问及调试功能</td>
+</tr>
+<tr>
+<td>encoding</td>
+<td>常见算法如 JSON、XML、Base64 等</td>
+</tr>
+<tr>
+<td>flag</td>
+<td>命令行解析</td>
+</tr>
+<tr>
+<td>fmt</td>
+<td>格式化操作</td>
+</tr>
+<tr>
+<td>go</td>
+<td>Go语言的词法、语法树、类型等。可通过这个包进行代码信息提取和修改</td>
+</tr>
+<tr>
+<td>html</td>
+<td>HTML 转义及模板系统</td>
+</tr>
+<tr>
+<td>image</td>
+<td>常见图形格式的访问及生成</td>
+</tr>
+<tr>
+<td>io</td>
+<td>实现 I/O 原始访问接口及访问封装</td>
+</tr>
+<tr>
+<td>math</td>
+<td>数学库</td>
+</tr>
+<tr>
+<td>net</td>
+<td>网络库，支持 Socket、HTTP、邮件、RPC、SMTP 等</td>
+</tr>
+<tr>
+<td>os</td>
+<td>操作系统平台不依赖平台操作封装</td>
+</tr>
+<tr>
+<td>path</td>
+<td>兼容各操作系统的路径操作实用函数</td>
+</tr>
+<tr>
+<td>plugin</td>
+<td>Go 1.7 加入的插件系统。支持将代码编译为插件，按需加载</td>
+</tr>
+<tr>
+<td>reflect</td>
+<td>语言反射支持。可以动态获得代码中的类型信息，获取和修改变量的值</td>
+</tr>
+<tr>
+<td>regexp</td>
+<td>正则表达式封装</td>
+</tr>
+<tr>
+<td>runtime</td>
+<td>运行时接口</td>
+</tr>
+<tr>
+<td>sort</td>
+<td>排序接口</td>
+</tr>
+<tr>
+<td>strings</td>
+<td>字符串转换、解析及实用函数</td>
+</tr>
+<tr>
+<td>time</td>
+<td>时间接口</td>
+</tr>
+<tr>
+<td>text</td>
+<td>文本模板及 Token 词法器</td>
+</tr>
+</tbody></table>
 
       
     </div>
@@ -535,7 +702,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-下载"><span class="nav-text">1. 下载</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-安装"><span class="nav-text">2. 安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-验证"><span class="nav-text">3. 验证</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-环境变量"><span class="nav-text">4. 环境变量</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-下载"><span class="nav-text">1. 下载</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-安装"><span class="nav-text">2. 安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-验证"><span class="nav-text">3. 验证</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-Go-目录"><span class="nav-text">4. Go 目录</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-Go-常用命令"><span class="nav-text">5.Go 常用命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-Go-手册"><span class="nav-text">6.Go 手册</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#7-Go标准库"><span class="nav-text">7. Go标准库</span></a></li></ol></li></ol></div>
             
 
           </div>
