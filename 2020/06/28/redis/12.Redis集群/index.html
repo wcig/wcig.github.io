@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Redis," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="Redis Cluster 是 Redis 官方提供的分布式解决方案。  1.数据分布数据分布理论： 常见的数据分布理论包括：哈希分区和顺序分区。 哈希分区的产品有：Redis Cluster；顺序分区的产品有：Bigtable、HBase。 哈希分区方案：  节点取余分区：  节点取余分区是根据对应的键 key，节点数量 N，通过公式 hash(key)%N 计算值决定分配在第几个节点。 这种">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis集群">
+<meta property="og:url" content="https://wcig.github.io/2020/06/28/redis/12.Redis%E9%9B%86%E7%BE%A4/index.html">
+<meta property="og:site_name" content="Wcig&#39;s Blog">
+<meta property="og:description" content="Redis Cluster 是 Redis 官方提供的分布式解决方案。  1.数据分布数据分布理论： 常见的数据分布理论包括：哈希分区和顺序分区。 哈希分区的产品有：Redis Cluster；顺序分区的产品有：Bigtable、HBase。 哈希分区方案：  节点取余分区：  节点取余分区是根据对应的键 key，节点数量 N，通过公式 hash(key)%N 计算值决定分配在第几个节点。 这种">
+<meta property="article:published_time" content="2020-06-28T14:17:00.000Z">
+<meta property="article:modified_time" content="2020-06-28T14:15:33.988Z">
+<meta property="article:author" content="Wcig">
+<meta property="article:tag" content="Redis">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://wcig.github.io/2020/06/28/redis/12.Redis集群/"/>
+
+
+
+
+
+  <title>Redis集群 | Wcig's Blog</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Wcig's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://wcig.github.io/2020/06/28/redis/12.Redis%E9%9B%86%E7%BE%A4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Wcig">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wcig's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Redis集群</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-06-28T22:17:00+08:00">
+                2020-06-28
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Redis/" itemprop="url" rel="index">
+                    <span itemprop="name">Redis</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p>Redis Cluster 是 Redis 官方提供的分布式解决方案。</p>
+</blockquote>
+<h4 id="1-数据分布"><a href="#1-数据分布" class="headerlink" title="1.数据分布"></a>1.数据分布</h4><p><strong>数据分布理论：</strong></p>
+<p>常见的数据分布理论包括：哈希分区和顺序分区。</p>
+<p>哈希分区的产品有：Redis Cluster；顺序分区的产品有：Bigtable、HBase。</p>
+<p><strong>哈希分区方案：</strong></p>
+<ol>
+<li>节点取余分区：</li>
+</ol>
+<p>节点取余分区是根据对应的键 key，节点数量 N，通过公式 hash(key)%N 计算值决定分配在第几个节点。</p>
+<p>这种方式优点就是简单。常用于数据库分库分表，一般扩容采用翻倍扩容，即原来3节点扩容为6节点。</p>
+<ol start="2">
+<li>一致性哈希分区</li>
+</ol>
+<p>一致性哈希分区是为每一个节点分配一个token，token的取值范围在0~2<sup>32</sup>形成一个哈希环。通过对 key 计算哈希值计算出第一个大于该值的 token 节点进行分配。</p>
+<ol start="3">
+<li>虚拟槽分区</li>
+</ol>
+<p>虚拟槽分区巧妙地使用了哈希空间，使用分散度良好的哈希函数把所有数据映射到一个固定范围的整数集合中，整数定义为槽（slot）。这个范围一般远远大于节点数，比如 Redis Cluster 槽范围是 <code>0~16383</code>。槽是集群内数据管理和迁移的基本单位。采用大范围槽的主要目的是为了方便数据拆分和集群扩展。</p>
+<p><strong>Redis Cluter方案：</strong></p>
+<p>Redis Cluster 采用虚拟槽方案，槽的范围为 0<del>16383。当集群有 5 个节点，每个节点平均负责 3276 个槽。第一个节点负责 0</del>3276 槽范围，其他节点以此类推。</p>
+<p><strong>集群功能限制：</strong></p>
+<ol>
+<li>key 批量操作支持有限。（比如mset、mget）</li>
+<li>key 事务操作支持有限。</li>
+<li>key 作为数据分区最小粒度，不能将一个大的 hash、list 分布到不同节点。</li>
+<li>不支持多数据库空间。单机下可以使用16个数据库，集群只能使用db0。</li>
+<li>复制结构只支持一层。从节点只能复制主节点，不支持嵌套树状复制结构。</li>
+</ol>
+<h4 id="2-集群搭建"><a href="#2-集群搭建" class="headerlink" title="2.集群搭建"></a>2.集群搭建</h4><p><strong>手动方式：</strong></p>
+<p>准备并启动各个节点 -&gt; 节点之间握手 -&gt; 分配槽。</p>
+<p><strong>工具方式：</strong></p>
+<p>简单方式：通过 Redis 安装目录 utils 下的 create-cluster 脚本搭建。</p>
+<p>复杂方式：通过 Redis 管理工具 redis-trib.rb （Ruby）。</p>
+<h4 id="3-节点通信"><a href="#3-节点通信" class="headerlink" title="3.节点通信"></a>3.节点通信</h4><p>Redis 采用 P2P 的 Gossip 协议。</p>
+<p>Gossip 消息包括：meet、ping、pong、fail 消息。</p>
+<ul>
+<li>meet：通知新节点加入。</li>
+<li>ping：校测节点是否正常，交互节点信息。</li>
+<li>pong：响应 meet、ping 消息。</li>
+<li>fail：当判定集群内一节点下线，会向集群其他节点广播 fail 消息。</li>
+</ul>
+<h4 id="4-集群伸缩"><a href="#4-集群伸缩" class="headerlink" title="4.集群伸缩"></a>4.集群伸缩</h4><p><strong>伸缩原理：</strong></p>
+<p>伸缩主要是2个步骤：添加或移除新节点、迁移槽至对应节点。</p>
+<p><strong>扩容集群：</strong></p>
+<p>扩容集群是添加新的节点到集群中。主要步骤是：准备新节点 -&gt; 加入集群 -&gt; 迁移槽和数据。</p>
+<p><strong>收缩集群：</strong></p>
+<p>收缩集群是减少集群节点。步骤是：下线迁移槽和数据 -&gt; 下架节点。</p>
+<h4 id="5-请求路由"><a href="#5-请求路由" class="headerlink" title="5.请求路由"></a>5.请求路由</h4><p><strong>请求重定向：</strong></p>
+<p>当 Redis 采用集群时，平常单点连接方式，如果是槽对应节点跟原来一样，如果不是槽对应节点会报 MOVED 错误。此时需要以集群方式连接：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">redis-cli -h 127.0.0.1 -p 7001 -c</span><br></pre></td></tr></table></figure>
+
+<p>此时如果不是对应节点，发送操作命令后会重定向到对应节点并重新发送命令然后响应。</p>
+<p><strong>Smart客户端：</strong></p>
+<p>大多数开发语言的 Redis 客户端都采用 Smart 客户端支持集群协议。此时客户端会保存 Redis 集群的槽和节点映射关系，并且会为每个节点建立一个 Redis 的连接池。</p>
+<h4 id="6-故障转移"><a href="#6-故障转移" class="headerlink" title="6.故障转移"></a>6.故障转移</h4><p><strong>故障发现：</strong></p>
+<p>故障发现只要是通过消息传播机制实现，主要环节包括：</p>
+<ul>
+<li>主观下线：某个节点通过消息判断另一个节点故障下线。</li>
+<li>客观下线：集群内多个节点判断某一节点不可用，一起达成共识认定下线。一般超过半数以上主节点判断主观下线即为客观下线。</li>
+</ul>
+<p><strong>故障恢复：</strong></p>
+<p>当某节点出现故障时，首先判断是否客观下线，然后推选出新的主节点，替换故障节点负责的槽，广播通知新的主节点。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Redis/" rel="tag"># Redis</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/06/28/redis/11.Redis%E9%98%BB%E5%A1%9E/" rel="next" title="Redis阻塞">
+                <i class="fa fa-chevron-left"></i> Redis阻塞
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/06/28/redis/13.Redis%E7%BC%93%E5%AD%98%E8%AE%BE%E8%AE%A1/" rel="prev" title="Redis缓存设计">
+                Redis缓存设计 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="Wcig" />
+            
+              <p class="site-author-name" itemprop="name">Wcig</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">21</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/wcig" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-数据分布"><span class="nav-text">1.数据分布</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-集群搭建"><span class="nav-text">2.集群搭建</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-节点通信"><span class="nav-text">3.节点通信</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-集群伸缩"><span class="nav-text">4.集群伸缩</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-请求路由"><span class="nav-text">5.请求路由</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#6-故障转移"><span class="nav-text">6.故障转移</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Wcig</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
