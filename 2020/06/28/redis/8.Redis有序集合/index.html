@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Wcig&#39;s Blog">
 <meta property="og:description" content="有序集合相较于列表和集合有所不同, 其中的有序表示集合中的元素可以排序, 而其排序的规则是为每一个元素设置一个分数 (score) 来作为排序的依据. 有序集合中的元素不能重复, 但 score 可以重复.  1. 命令1.1 集合内1) 添加元素 1zadd key score member [score member ...]  member 为添加的元素, score 为其对应的分数. 1">
 <meta property="article:published_time" content="2020-06-28T14:13:00.000Z">
-<meta property="article:modified_time" content="2020-06-28T14:14:12.412Z">
+<meta property="article:modified_time" content="2020-07-12T04:47:22.630Z">
 <meta property="article:author" content="Wcig">
 <meta property="article:tag" content="Redis">
 <meta name="twitter:card" content="summary">
@@ -357,50 +357,80 @@
 <li>CH: 返回此次操作后, 有序集合元素和分数变化个数</li>
 <li>INCR: 对 score 做增加, 相当于 zincrby</li>
 </ul>
-<p>2) 计算成员个数</p>
+<p>2) 获取成员个数</p>
+<ol>
+<li>获取有序集合的总成员个数</li>
+</ol>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zcard key</span><br></pre></td></tr></table></figure>
 
 <p>和集合 scard 命令一样, 时间复杂度为 O(1).</p>
-<p>3) 计算某个成员分数</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zscore key member</span><br></pre></td></tr></table></figure>
-
-<p>成员存在返回对应分数, 否则返回 nil.</p>
-<p>4) 计算成员排名</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">zrank key member</span><br><span class="line">zrevrank key member</span><br></pre></td></tr></table></figure>
-
-<p>zrank/zrevrank 返回成员 score 的排名, zrank 是分数从小到大排, zrevrank 是从大到小排.</p>
-<p>分数一样?</p>
-<p>5) 删除成员</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zrem key member [member ...]</span><br></pre></td></tr></table></figure>
-
-<p>返回删除成功元素个数.</p>
-<p>6) 增加成员分数</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zincrby key increment member</span><br></pre></td></tr></table></figure>
-
-<p>返回操作后的成员分数, increment 可以是负数.</p>
-<p>7) 返回指定排名范围的成员</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">zrange key start end [withscores]</span><br><span class="line">zrevrange key start end [withscores]</span><br></pre></td></tr></table></figure>
-
-<p>zrange/zrevrange 分别按分数从低到高和从高到低返回, 加上 withscores 参数则同时返回成员分数.</p>
-<p>8) 返回指定分数范围成员</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">zrangebyscore key min max [withscores] [limit offset count]</span><br><span class="line">zrevrangebyscore key min max [withscores] [limit offset count]</span><br></pre></td></tr></table></figure>
-
-<p>zrangebyscore/zrevrangebyscore 分别按分数从低到高和从高到低返回, 加上 withscores 参数则同时返回成员分数. [limit offset count] 可以限制输出的起始位置和个数.</p>
-<p>min/max 支持开区间 (小括号) 和闭区间 (中括号), -inf/+inf 分别表示无限小和无限大.</p>
-<p>eg: </p>
-<p>zrangebyscore zset1 (10 (100</p>
-<p>返回分数范围为 10&lt;score&lt;100 的成员</p>
-<p>9) 返回指定分数范围的成员个数</p>
+<ol start="2">
+<li>返回指定分数范围的成员个数</li>
+</ol>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zcount key min max</span><br></pre></td></tr></table></figure>
 
 
 
-<p>10) 删除知道排名内的升序元素</p>
+<ol start="3">
+<li>按字典升序获取指定元素区间的成员个数</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zlexcount key min max</span><br></pre></td></tr></table></figure>
+
+
+
+<p>3) 获取成员分数</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zscore key member</span><br></pre></td></tr></table></figure>
+
+<p>成员存在返回对应分数, 否则返回 nil.</p>
+<p>4) 获取成员排名</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">zrank key member</span><br><span class="line">zrevrank key member</span><br></pre></td></tr></table></figure>
+
+<p>zrank/zrevrank 返回成员 score 的排名, zrank 是按score从小到大排, zrevrank 是从大到小排. 不存在则返回nil，score值最小的成员排名为0。</p>
+<p>5) 增加成员分数</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zincrby key increment member</span><br></pre></td></tr></table></figure>
+
+<p>返回操作后的成员分数, increment 可以是负数.</p>
+<p>6) 返回指定排名范围的成员</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">zrange key start end [withscores]</span><br><span class="line">zrevrange key start end [withscores]</span><br></pre></td></tr></table></figure>
+
+<p>zrange/zrevrange 分别按分数从低到高和从高到低返回, 加上 withscores 参数则同时返回成员分数.</p>
+<p>start 和 end 是基于0的索引，其中0为第一个元素，1为第二个元素，-1位倒数第一个元素，-2位倒数第二个元素，取出元素为 start &lt;= index &lt;= end 范围内。</p>
+<p>7) 返回指定分数范围成员</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">zrangebyscore key min max [withscores] [limit offset count]</span><br><span class="line">zrevrangebyscore key min max [withscores] [limit offset count]</span><br></pre></td></tr></table></figure>
+
+<p>zrangebyscore/zrevrangebyscore 分别按分数从低到高和从高到低返回, 加上 withscores 参数则同时返回成员分数. [limit offset count] 可以限制输出的起始位置和个数.</p>
+<p>min/max 支持开区间 (小括号) 和闭区间 (中括号或不加), -inf/+inf 分别表示无限小和无限大.</p>
+<p>示例：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 返回分数范围为 10&lt;score&lt;=100 的成员</span></span><br><span class="line">zrangebyscore zset1 (10 100</span><br></pre></td></tr></table></figure>
+
+
+
+<p>8) 按字典正序获取指定范围内元素</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zrangebylex key min max [LIMIT offset count]</span><br></pre></td></tr></table></figure>
+
+<p>min，max分别为集合中字典较小和较大的元素，开闭可以使用 ( 和 [，也可使用 - 和 + 表示字典最小和最大的元素。</p>
+<p>9) 删除成员</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zrem key member [member ...]</span><br></pre></td></tr></table></figure>
+
+<p>返回删除成功元素个数.</p>
+<p>10) 删除指定排名内的元素 （升序）</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zremrangebyrank key start end</span><br></pre></td></tr></table></figure>
 
-<p>按分数删除第 start 到第 end 名的成员.</p>
+<p>按分数从第到高删除  start &lt;= index &lt;= end 位置的成员.</p>
 <p>11) 删除指定分数范围内的成员</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zremrangebyscore key min max</span><br></pre></td></tr></table></figure>
+
+
+
+<p>12) 按字典升序删除指定元素区间的成员</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zremrangebylex key min max</span><br></pre></td></tr></table></figure>
+
+
+
+<p>13) 按score顺序删除count个元素（count默认值为1）</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 从高到低</span></span><br><span class="line">zpopmax key [count]</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 从低到高</span></span><br><span class="line">zpopmin key [count]</span><br></pre></td></tr></table></figure>
+
+
 
 
 
@@ -608,7 +638,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">24</span>
+                  <span class="site-state-item-count">25</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
