@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Wcig&#39;s Blog">
 <meta property="og:description" content="Redis Cluster 是 Redis 官方提供的分布式解决方案。  1.数据分布数据分布理论： 常见的数据分布理论包括：哈希分区和顺序分区。 哈希分区的产品有：Redis Cluster；顺序分区的产品有：Bigtable、HBase。 哈希分区方案：  节点取余分区：  节点取余分区是根据对应的键 key，节点数量 N，通过公式 hash(key)%N 计算值决定分配在第几个节点。 这种">
 <meta property="article:published_time" content="2020-06-28T14:17:00.000Z">
-<meta property="article:modified_time" content="2020-06-28T14:15:33.988Z">
+<meta property="article:modified_time" content="2020-07-12T12:40:20.093Z">
 <meta property="article:author" content="Wcig">
 <meta property="article:tag" content="Redis">
 <meta name="twitter:card" content="summary">
@@ -362,7 +362,7 @@
 </ol>
 <p>虚拟槽分区巧妙地使用了哈希空间，使用分散度良好的哈希函数把所有数据映射到一个固定范围的整数集合中，整数定义为槽（slot）。这个范围一般远远大于节点数，比如 Redis Cluster 槽范围是 <code>0~16383</code>。槽是集群内数据管理和迁移的基本单位。采用大范围槽的主要目的是为了方便数据拆分和集群扩展。</p>
 <p><strong>Redis Cluter方案：</strong></p>
-<p>Redis Cluster 采用虚拟槽方案，槽的范围为 0<del>16383。当集群有 5 个节点，每个节点平均负责 3276 个槽。第一个节点负责 0</del>3276 槽范围，其他节点以此类推。</p>
+<p>Redis Cluster 采用虚拟槽方案，槽的范围为 <code>0~16383</code>。当集群有 5 个节点，每个节点平均负责 3276 个槽。第一个节点负责 0~3276 槽范围，其他节点以此类推。</p>
 <p><strong>集群功能限制：</strong></p>
 <ol>
 <li>key 批量操作支持有限。（比如mset、mget）</li>

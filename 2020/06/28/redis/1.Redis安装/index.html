@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="Wcig&#39;s Blog">
 <meta property="og:description" content="1. 单节点安装1.1 Win10安装选择msi文件下载安装。安装包下载地址：https:&#x2F;&#x2F;github.com&#x2F;MicrosoftArchive&#x2F;redis&#x2F;tags 1.2 Ubuntu安装12$ sudo apt update$ sudo apt install redis-server  1.3 Linux编译安装1234$ wget http:&#x2F;&#x2F;download.redis.io&#x2F;r">
 <meta property="article:published_time" content="2020-06-28T14:06:00.000Z">
-<meta property="article:modified_time" content="2020-06-28T14:11:31.779Z">
+<meta property="article:modified_time" content="2020-07-12T13:01:47.837Z">
 <meta property="article:author" content="Wcig">
 <meta property="article:tag" content="Redis">
 <meta name="twitter:card" content="summary">
@@ -358,9 +358,16 @@
 
 
 
+<h4 id="3-基础信息查看"><a href="#3-基础信息查看" class="headerlink" title="3. 基础信息查看"></a>3. 基础信息查看</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 查看版本</span></span><br><span class="line">redis-server -v</span><br><span class="line">redis-server -version</span><br><span class="line"></span><br><span class="line">redis-cli -v</span><br><span class="line">redis-cli -version</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 查看目录</span></span><br><span class="line">which redis-server</span><br><span class="line">whereis redis-server</span><br><span class="line"></span><br><span class="line">which redis-cli</span><br><span class="line">whereis redis-cli</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> redis运行状态查看</span></span><br><span class="line">systemctl status redis</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
 <p>参考：</p>
-<p><a href="https://www.runoob.com/redis/redis-install.html" target="_blank" rel="noopener">Redis菜鸟教程-Redis安装</a></p>
-<p><a href="https://redis.io/topics/cluster-tutorial" target="_blank" rel="noopener">Redis集群文档</a></p>
+<p><a href="https://www.runoob.com/redis/redis-install.html" target="_blank" rel="noopener">Redis菜鸟教程-Redis安装</a><br><a href="https://redis.io/topics/cluster-tutorial" target="_blank" rel="noopener">Redis集群文档</a></p>
 
       
     </div>
@@ -549,7 +556,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-单节点安装"><span class="nav-text">1. 单节点安装</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-1-Win10安装"><span class="nav-text">1.1 Win10安装</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#1-2-Ubuntu安装"><span class="nav-text">1.2 Ubuntu安装</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#"><span class="nav-text"></span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-3-Linux编译安装"><span class="nav-text">1.3 Linux编译安装</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-集群安装"><span class="nav-text">2. 集群安装</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#2-1-create-cluster方式"><span class="nav-text">2.1 create-cluster方式</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-2-手动方式"><span class="nav-text">2.2 手动方式</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-单节点安装"><span class="nav-text">1. 单节点安装</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-1-Win10安装"><span class="nav-text">1.1 Win10安装</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#1-2-Ubuntu安装"><span class="nav-text">1.2 Ubuntu安装</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#"><span class="nav-text"></span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-3-Linux编译安装"><span class="nav-text">1.3 Linux编译安装</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-集群安装"><span class="nav-text">2. 集群安装</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#2-1-create-cluster方式"><span class="nav-text">2.1 create-cluster方式</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-2-手动方式"><span class="nav-text">2.2 手动方式</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-基础信息查看"><span class="nav-text">3. 基础信息查看</span></a></li></ol></div>
             
 
           </div>
