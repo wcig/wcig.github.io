@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Golang," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="1. 常量123const (	defaultBufSize &#x3D; 4096)    2. 变量123456var (	ErrInvalidUnreadByte &#x3D; errors.New(&quot;bufio: invalid use of UnreadByte&quot;)	ErrInvalidUnreadRune &#x3D; errors.New(&quot;bufio: invalid use of UnreadRune&quot;)	E">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Go标准库-bufio">
+<meta property="og:url" content="https://wcig.github.io/2020/09/07/golang/23.Go%E6%A0%87%E5%87%86%E5%BA%93-bufio/index.html">
+<meta property="og:site_name" content="Wcig&#39;s Blog">
+<meta property="og:description" content="1. 常量123const (	defaultBufSize &#x3D; 4096)    2. 变量123456var (	ErrInvalidUnreadByte &#x3D; errors.New(&quot;bufio: invalid use of UnreadByte&quot;)	ErrInvalidUnreadRune &#x3D; errors.New(&quot;bufio: invalid use of UnreadRune&quot;)	E">
+<meta property="article:published_time" content="2020-09-07T14:20:00.000Z">
+<meta property="article:modified_time" content="2020-09-08T14:22:12.750Z">
+<meta property="article:author" content="Wcig">
+<meta property="article:tag" content="Golang">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://wcig.github.io/2020/09/07/golang/23.Go标准库-bufio/"/>
+
+
+
+
+
+  <title>Go标准库-bufio | Wcig's Blog</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Wcig's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://wcig.github.io/2020/09/07/golang/23.Go%E6%A0%87%E5%87%86%E5%BA%93-bufio/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Wcig">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wcig's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Go标准库-bufio</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-09-07T22:20:00+08:00">
+                2020-09-07
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Golang/" itemprop="url" rel="index">
+                    <span itemprop="name">Golang</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="1-常量"><a href="#1-常量" class="headerlink" title="1. 常量"></a>1. 常量</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> (</span><br><span class="line">	defaultBufSize = <span class="number">4096</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="2-变量"><a href="#2-变量" class="headerlink" title="2. 变量"></a>2. 变量</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> (</span><br><span class="line">	ErrInvalidUnreadByte = errors.New(<span class="string">"bufio: invalid use of UnreadByte"</span>)</span><br><span class="line">	ErrInvalidUnreadRune = errors.New(<span class="string">"bufio: invalid use of UnreadRune"</span>)</span><br><span class="line">	ErrBufferFull        = errors.New(<span class="string">"bufio: buffer full"</span>)</span><br><span class="line">	ErrNegativeCount     = errors.New(<span class="string">"bufio: negative count"</span>)</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="3-类型和方法"><a href="#3-类型和方法" class="headerlink" title="3. 类型和方法"></a>3. 类型和方法</h3><h4 id="3-1-bufio-Reader"><a href="#3-1-bufio-Reader" class="headerlink" title="3.1 bufio.Reader"></a>3.1 bufio.Reader</h4><p><code>bufio.Reader</code> 结构包装了一个 io.Reader 对象来提供缓存读功能，同时自身内部实现了 io.Reader 接口。</p>
+<p><strong>类型定义：</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Reader <span class="keyword">struct</span> &#123;</span><br><span class="line">	buf          []<span class="keyword">byte</span></span><br><span class="line">	rd           io.Reader <span class="comment">// reader</span></span><br><span class="line">	r, w         <span class="keyword">int</span>       <span class="comment">// buf读和写的位置</span></span><br><span class="line">	err          error     <span class="comment">// 读过程出现的错误</span></span><br><span class="line">	lastByte     <span class="keyword">int</span>       <span class="comment">// last byte read for UnreadByte; -1 means invalid</span></span><br><span class="line">	lastRuneSize <span class="keyword">int</span>       <span class="comment">// size of last rune read for UnreadRune; -1 means invalid</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>实例化：</strong></p>
+<p><code>NewReader()</code> 函数接收一个 reader 参数，以默认换成大小转换成 bufio.Reader。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// NewReader returns a new Reader whose buffer has the default size.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewReader</span><span class="params">(rd io.Reader)</span> *<span class="title">Reader</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> NewReaderSize(rd, defaultBufSize)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><code>NewReaderSize()</code> 函数接收一个 reader 和一个 size 大小，按照指定 size 大小转换成 bufio.Reader。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> minReadBufferSize = <span class="number">16</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewReaderSize</span><span class="params">(rd io.Reader, size <span class="keyword">int</span>)</span> *<span class="title">Reader</span></span> &#123;</span><br><span class="line">	<span class="comment">// 已经是bufio.Reader类型且缓存大小大于或等于size，则直接返回</span></span><br><span class="line">	b, ok := rd.(*Reader)</span><br><span class="line">	<span class="keyword">if</span> ok &amp;&amp; <span class="built_in">len</span>(b.buf) &gt;= size &#123;</span><br><span class="line">		<span class="keyword">return</span> b</span><br><span class="line">	&#125;</span><br><span class="line">  <span class="comment">// 缓存大小默认不小于minReadBufferSize字节</span></span><br><span class="line">	<span class="keyword">if</span> size &lt; minReadBufferSize字节 &#123;</span><br><span class="line">		size = minReadBufferSize</span><br><span class="line">	&#125;</span><br><span class="line">  <span class="comment">// 构造bufio.Reader实例</span></span><br><span class="line">	r := <span class="built_in">new</span>(Reader)</span><br><span class="line">	r.reset(<span class="built_in">make</span>([]<span class="keyword">byte</span>, size), rd)</span><br><span class="line">	<span class="keyword">return</span> r</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>方法：</strong></p>
+<p><code>ReadSlice</code> 方法：从输入中读取直到遇到第一个界定符（delim），返回一个包含界定符指向缓存中的字节切片，下次调用读操作这些字节会失效。</p>
+<ul>
+<li>如果在找到界定符之前出现错误，将会返回 buffer 中的数据和出现的错误（经常是 io.EOF）</li>
+<li>如果在找到界定符之前 buffer 就已经满了，将会返回错误 ErrBufferFull</li>
+<li>如果返回的 line 没有以界定符结尾，则 err != nil</li>
+<li>因为返回的字节切片是直接指向 Reader 的 buffer 的，而不是拷贝出一份，所以 ReadSlice 读取的数据会被下一次 I/O 操作重写。建议使用 ReadBytes 或 ReadString代替。</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(b *Reader)</span> <span class="title">ReadSlice</span><span class="params">(delim <span class="keyword">byte</span>)</span> <span class="params">(line []<span class="keyword">byte</span>, err error)</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>示例：</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ReadSlice</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestReadSlice</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	reader := bufio.NewReader(strings.NewReader(<span class="string">"hello world.|It is ok"</span>))</span><br><span class="line"></span><br><span class="line">	line1, _ := reader.ReadSlice(<span class="string">'|'</span>)</span><br><span class="line">	fmt.Println(<span class="string">"line1:"</span>, <span class="keyword">string</span>(line1))</span><br><span class="line"></span><br><span class="line">	line2, _ := reader.ReadSlice(<span class="string">'|'</span>)</span><br><span class="line">	fmt.Println(<span class="string">"line2:"</span>, <span class="keyword">string</span>(line2))</span><br><span class="line">	fmt.Println(<span class="string">"line1:"</span>, <span class="keyword">string</span>(line1))</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// output:</span></span><br><span class="line"><span class="comment">// line1: hello world.|</span></span><br><span class="line"><span class="comment">// line2: It is ok</span></span><br><span class="line"><span class="comment">// line1: It is okrld.|</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p><code>ReadBytes</code> 方法的参数和返回值与 ReadSlice 一致。也是从输入读取直到遇到界定符（delim）为止，返回的数据同样也包括界定符。</p>
+<ul>
+<li>如果在找到界定符之前出现错误，将返回错误出现前读取的数据以及该错误（经常是 io.EOF）</li>
+<li>如果返回的 line 没有以界定符结尾，则 err != nil</li>
+<li>方法返回的字节切片数据没有指向 buffer，所以不会像 ReadSlice 那样下次读取会影响上次读取到的数据</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(b *Reader)</span> <span class="title">ReadBytes</span><span class="params">(delim <span class="keyword">byte</span>)</span> <span class="params">([]<span class="keyword">byte</span>, error)</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>示例：</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ReadBytes</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestReadBytes</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	reader := bufio.NewReader(strings.NewReader(<span class="string">"hello world.|It is ok"</span>))</span><br><span class="line"></span><br><span class="line">	line1, _ := reader.ReadBytes(<span class="string">'|'</span>)</span><br><span class="line">	fmt.Println(<span class="string">"line1:"</span>, <span class="keyword">string</span>(line1))</span><br><span class="line"></span><br><span class="line">	line2, _ := reader.ReadBytes(<span class="string">'|'</span>)</span><br><span class="line">	fmt.Println(<span class="string">"line2:"</span>, <span class="keyword">string</span>(line2))</span><br><span class="line">	fmt.Println(<span class="string">"line1:"</span>, <span class="keyword">string</span>(line1))</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// output:</span></span><br><span class="line"><span class="comment">// line1: hello world.|</span></span><br><span class="line"><span class="comment">// line2: It is ok</span></span><br><span class="line"><span class="comment">// line1: hello world.|</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p><code>ReadString</code> 方法与 ReadBytes 类似，区别在于返回的不是字节切片而是字符串。</p>
+<ul>
+<li>如果在找到界定符之前出现错误，将返回错误出现前读取的数据以及该错误（经常是 io.EOF）</li>
+<li>如果返回的 line 没有以界定符结尾，则 err != nil</li>
+<li>方法返回的字节切片数据没有指向 buffer，所以不会像 ReadSlice 那样下次读取会影响上次读取到的数据</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(b *Reader)</span> <span class="title">ReadString</span><span class="params">(delim <span class="keyword">byte</span>)</span> <span class="params">(<span class="keyword">string</span>, error)</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>示例：</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ReadString</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestReadString</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	reader := bufio.NewReader(strings.NewReader(<span class="string">"hello world.|It is ok"</span>))</span><br><span class="line"></span><br><span class="line">	line1, _ := reader.ReadString(<span class="string">'|'</span>)</span><br><span class="line">	fmt.Println(<span class="string">"line1:"</span>, <span class="keyword">string</span>(line1))</span><br><span class="line"></span><br><span class="line">	line2, _ := reader.ReadString(<span class="string">'|'</span>)</span><br><span class="line">	fmt.Println(<span class="string">"line2:"</span>, <span class="keyword">string</span>(line2))</span><br><span class="line">	fmt.Println(<span class="string">"line1:"</span>, <span class="keyword">string</span>(line1))</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// output:</span></span><br><span class="line"><span class="comment">// line1: hello world.|</span></span><br><span class="line"><span class="comment">// line2: It is ok</span></span><br><span class="line"><span class="comment">// line1: hello world.|</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p><code>ReadLine</code> 是一个低水平的粗糙的行数据读取方法。大多数调用者应使用ReadBytes(‘\n’)或ReadString(‘\n’)代替，或者使用Scanner。</p>
+<ul>
+<li>ReadLine 尝试返回一行数据，不包括行尾标志的字节。如果行太长超过了缓冲，返回值 isPrefix 会被设为 true，并返回行的前面一部分。该行剩下的部分将在之后的调用中返回。返回值 isPrefix 会在返回该行最后一个片段时才设为false。返回切片是缓冲的子切片，只在下一次读取操作之前有效。ReadLine 要么返回一个非 nil 的 line，要么返回一个非 nil 的 err，两个返回值至少一个非 nil。</li>
+<li>返回的文本不包含行尾的标志字节（”\r\n”或”\n”）。如果输入流结束时没有行尾标志字节，方法不会出错，也不会指出这一情况。在调用 ReadLine 之后调用 UnreadByte 会总是吐出最后一个读取的字节（很可能是该行的行尾标志字节），即使该字节不是 ReadLine 返回值的一部分。</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(b *Reader)</span> <span class="title">ReadLine</span><span class="params">()</span> <span class="params">(line []<span class="keyword">byte</span>, isPrefix <span class="keyword">bool</span>, err error)</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>示例：</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ReadLine</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestReadLine</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	reader := bufio.NewReader(strings.NewReader(<span class="string">"hello world.\nIt is ok"</span>))</span><br><span class="line">	<span class="keyword">for</span> &#123;</span><br><span class="line">		line, isPrefix, err := reader.ReadLine()</span><br><span class="line">		<span class="keyword">if</span> err == io.EOF &#123;</span><br><span class="line">			<span class="keyword">break</span></span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">			t.Fatal(err)</span><br><span class="line">		&#125;</span><br><span class="line">		fmt.Println(<span class="keyword">string</span>(line), isPrefix)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// output:</span></span><br><span class="line"><span class="comment">// hello world. false</span></span><br><span class="line"><span class="comment">// It is ok false</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p>其他：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 实现io.Reader接口</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(b *Reader)</span> <span class="title">Peek</span><span class="params">(n <span class="keyword">int</span>)</span> <span class="params">([]<span class="keyword">byte</span>, error)</span></span></span><br><span class="line"><span class="comment">// 跳过下面的n个字节，返回跳过的字节数和错误</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(b *Reader)</span> <span class="title">Discard</span><span class="params">(n <span class="keyword">int</span>)</span> <span class="params">(discarded <span class="keyword">int</span>, err error)</span></span></span><br><span class="line"><span class="comment">// 实现io.Reader接口</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(b *Reader)</span> <span class="title">Read</span><span class="params">(p []<span class="keyword">byte</span>)</span> <span class="params">(n <span class="keyword">int</span>, err error)</span></span></span><br><span class="line"><span class="comment">// 实现io.ByteReader接口</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(b *Reader)</span> <span class="title">ReadByte</span><span class="params">()</span> <span class="params">(<span class="keyword">byte</span>, error)</span></span></span><br><span class="line"><span class="comment">// 实现io.ByteScanner接口</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(b *Reader)</span> <span class="title">UnreadByte</span><span class="params">()</span> <span class="title">error</span></span></span><br><span class="line"><span class="comment">// 实现io.RuneReader接口</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(b *Reader)</span> <span class="title">ReadRune</span><span class="params">()</span> <span class="params">(r <span class="keyword">rune</span>, size <span class="keyword">int</span>, err error)</span></span></span><br><span class="line"><span class="comment">// 实现io.RuneScanner接口</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(b *Reader)</span> <span class="title">UnreadRune</span><span class="params">()</span> <span class="title">error</span></span></span><br><span class="line"><span class="comment">// 返回缓冲中现有的可读取的字节数</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(b *Reader)</span> <span class="title">Buffered</span><span class="params">()</span> <span class="title">int</span></span></span><br><span class="line"><span class="comment">// 将reader的buffer数据写入w</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(b *Reader)</span> <span class="title">writeBuf</span><span class="params">(w io.Writer)</span> <span class="params">(<span class="keyword">int64</span>, error)</span></span></span><br><span class="line"><span class="comment">// 将reader的buffer数据接入w (实现了io.WriterTo接口)</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(b *Reader)</span> <span class="title">WriteTo</span><span class="params">(w io.Writer)</span> <span class="params">(n <span class="keyword">int64</span>, err error)</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="3-2-Writer"><a href="#3-2-Writer" class="headerlink" title="3.2 Writer"></a>3.2 Writer</h4><p><code>bufio.Writer</code> 包装了一个 io.Writer 对象的提供缓存写功能的结构，同时也实现了 io.Writer 接口。</p>
+<p><strong>类型定义：</strong></p>
+<p>如果在向一个Writer类型值写入时遇到了错误，该对象将不再接受任何数据，且所有写操作都会返回该错误。在说有数据都写入后，调用者有义务调用Flush方法以保证所有的数据都交给了下层的io.Writer。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Writer <span class="keyword">struct</span> &#123;</span><br><span class="line">	err error     <span class="comment">// 错误</span></span><br><span class="line">	buf []<span class="keyword">byte</span>    <span class="comment">// 缓存</span></span><br><span class="line">	n   <span class="keyword">int</span>       <span class="comment">// 当前缓存的字节数</span></span><br><span class="line">	wr  io.Writer <span class="comment">// io.Writer对象</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>实例化：</strong></p>
+<p><code>NewWriter</code> 函数接收一个 io.Writer 对象，以默认缓存大小包装成 bufio.Writer 返回。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewWriter</span><span class="params">(w io.Writer)</span> *<span class="title">Writer</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> NewWriterSize(w, defaultBufSize)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><code>NewWriterSize</code> 函数接口一个 io.Writer 对象和一个缓存大小 size，包装成 bufio.Writer 返回。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// NewWriterSize returns a new Writer whose buffer has at least the specified</span></span><br><span class="line"><span class="comment">// size. If the argument io.Writer is already a Writer with large enough</span></span><br><span class="line"><span class="comment">// size, it returns the underlying Writer.</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewWriterSize</span><span class="params">(w io.Writer, size <span class="keyword">int</span>)</span> *<span class="title">Writer</span></span> &#123;</span><br><span class="line">	<span class="comment">// 已经是bufio.Writer类型且缓存大小大于或等于size，则直接返回</span></span><br><span class="line">	b, ok := w.(*Writer)</span><br><span class="line">	<span class="keyword">if</span> ok &amp;&amp; <span class="built_in">len</span>(b.buf) &gt;= size &#123;</span><br><span class="line">		<span class="keyword">return</span> b</span><br><span class="line">	&#125;</span><br><span class="line">  <span class="comment">// 缓存大小默认不小于defaultBufSize字节</span></span><br><span class="line">	<span class="keyword">if</span> size &lt;= <span class="number">0</span> &#123;</span><br><span class="line">		size = defaultBufSize</span><br><span class="line">	&#125;</span><br><span class="line">  <span class="comment">// 构造bufio.Writer实例</span></span><br><span class="line">	<span class="keyword">return</span> &amp;Writer&#123;</span><br><span class="line">		buf: <span class="built_in">make</span>([]<span class="keyword">byte</span>, size),</span><br><span class="line">		wr:  w,</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>方法：</strong></p>
+<p><code>WriteString</code> 方法：写入一个字符串到缓冲，返回写入的字节数。如果返回的字节数小于 len(s) 将返回说明原因的错误。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(b *Writer)</span> <span class="title">WriteString</span><span class="params">(s <span class="keyword">string</span>)</span> <span class="params">(<span class="keyword">int</span>, error)</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>示例：</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// WriteString</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestWriteString</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	rb := &amp;bytes.Buffer&#123;&#125;</span><br><span class="line">	writer := bufio.NewWriter(rb)</span><br><span class="line">	n, err := writer.WriteString(<span class="string">"hello world."</span>)</span><br><span class="line">	fmt.Println(n, err) <span class="comment">// 12 &lt;nil&gt;</span></span><br><span class="line"></span><br><span class="line">	writer.Flush()</span><br><span class="line">	fmt.Println(rb.String()) <span class="comment">// hello world.</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>其他：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 返回底层buffer的size</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(b *Writer)</span> <span class="title">Size</span><span class="params">()</span> <span class="title">int</span></span></span><br><span class="line"><span class="comment">// 丢弃缓冲中的数据，清除任何错误，将b重设为将其输出写入w</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(b *Writer)</span> <span class="title">Reset</span><span class="params">(w io.Writer)</span></span></span><br><span class="line"><span class="comment">// 将缓冲中的数据写入底层的io.Writer接口</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(b *Writer)</span> <span class="title">Flush</span><span class="params">()</span> <span class="title">error</span></span></span><br><span class="line"><span class="comment">// 返回缓冲未使用的字节数</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(b *Writer)</span> <span class="title">Available</span><span class="params">()</span> <span class="title">int</span></span></span><br><span class="line"><span class="comment">// 返回缓冲中已使用的字节数</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(b *Writer)</span> <span class="title">Buffered</span><span class="params">()</span> <span class="title">int</span></span></span><br><span class="line"><span class="comment">// 将数据p写入缓冲 (实现io.Writer接口)</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(b *Writer)</span> <span class="title">Write</span><span class="params">(p []<span class="keyword">byte</span>)</span> <span class="params">(nn <span class="keyword">int</span>, err error)</span></span></span><br><span class="line"><span class="comment">// 写入单个字符 (实现io.ByteWriter接口)</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(b *Writer)</span> <span class="title">WriteByte</span><span class="params">(c <span class="keyword">byte</span>)</span> <span class="title">error</span></span></span><br><span class="line"><span class="comment">// 写入一个unicode字符</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(b *Writer)</span> <span class="title">WriteRune</span><span class="params">(r <span class="keyword">rune</span>)</span> <span class="params">(size <span class="keyword">int</span>, err error)</span></span></span><br><span class="line"><span class="comment">// 实现了io.ReaderForm接口</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(b *Writer)</span> <span class="title">ReadFrom</span><span class="params">(r io.Reader)</span> <span class="params">(n <span class="keyword">int64</span>, err error)</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="3-3-bufio-Scanner"><a href="#3-3-bufio-Scanner" class="headerlink" title="3.3 bufio.Scanner"></a>3.3 bufio.Scanner</h4><p><code>bufio.Scanner</code> 类型提供了方便的读取数据接口，如从换行符分隔的文本读取每一行。</p>
+<p><strong>类型定义：</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Scanner <span class="keyword">struct</span> &#123;</span><br><span class="line">	r            io.Reader <span class="comment">// The reader provided by the client.</span></span><br><span class="line">	split        SplitFunc <span class="comment">// The function to split the tokens.</span></span><br><span class="line">	maxTokenSize <span class="keyword">int</span>       <span class="comment">// Maximum size of a token; modified by tests.</span></span><br><span class="line">	token        []<span class="keyword">byte</span>    <span class="comment">// Last token returned by split.</span></span><br><span class="line">	buf          []<span class="keyword">byte</span>    <span class="comment">// Buffer used as argument to split.</span></span><br><span class="line">	start        <span class="keyword">int</span>       <span class="comment">// First non-processed byte in buf.</span></span><br><span class="line">	end          <span class="keyword">int</span>       <span class="comment">// End of data in buf.</span></span><br><span class="line">	err          error     <span class="comment">// Sticky error.</span></span><br><span class="line">	empties      <span class="keyword">int</span>       <span class="comment">// Count of successive empty tokens.</span></span><br><span class="line">	scanCalled   <span class="keyword">bool</span>      <span class="comment">// Scan has been called; buffer is in use.</span></span><br><span class="line">	done         <span class="keyword">bool</span>      <span class="comment">// Scan has finished.</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>函数：</strong></p>
+<p><code>SplitFunc</code> 类型表示对输入做词法分析的分割函数。</p>
+<ul>
+<li>参数 data 表示待处理的字节切片</li>
+<li>参数 atEOF 表示是否 Reader 接口不能提供更多数据（是否到EOF了）</li>
+<li>返回值 advance 表示解析位置前进的字节数，token 表示下一个结果数据，err 表示错误</li>
+<li>如果 data 没有一个完整的 token，则返回 (0, nil. nil)</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> SplitFunc <span class="function"><span class="keyword">func</span><span class="params">(data []<span class="keyword">byte</span>, atEOF <span class="keyword">bool</span>)</span> <span class="params">(advance <span class="keyword">int</span>, token []<span class="keyword">byte</span>, err error)</span></span></span><br></pre></td></tr></table></figure>
+
+<p>例如：<code>hello world.\tok\t666</code> 通过 <code>\t</code> 分词后会得到 3 个 token，分别是 “hello world.”、“ok” 和 “666”，而上面返回的是第一个 token 即 “hello world.”。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 返回一行文本作为token，不包括行尾换行符（windows:\r\n, unix:\n）</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">ScanLines</span><span class="params">(data []<span class="keyword">byte</span>, atEOF <span class="keyword">bool</span>)</span> <span class="params">(advance <span class="keyword">int</span>, token []<span class="keyword">byte</span>, err error)</span></span> </span><br><span class="line"><span class="comment">// 返回每个字节作为token</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">ScanBytes</span><span class="params">(data []<span class="keyword">byte</span>, atEOF <span class="keyword">bool</span>)</span> <span class="params">(advance <span class="keyword">int</span>, token []<span class="keyword">byte</span>, err error)</span></span></span><br><span class="line"><span class="comment">// 返回每个utf8编码的unicode字符作为token</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">ScanRunes</span><span class="params">(data []<span class="keyword">byte</span>, atEOF <span class="keyword">bool</span>)</span> <span class="params">(advance <span class="keyword">int</span>, token []<span class="keyword">byte</span>, err error)</span></span></span><br><span class="line"><span class="comment">// 返回通过空格分隔符分割的单词，不包括空格（空格包括:\t,\n,\v,\f,\r...）</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">ScanWords</span><span class="params">(data []<span class="keyword">byte</span>, atEOF <span class="keyword">bool</span>)</span> <span class="params">(advance <span class="keyword">int</span>, token []<span class="keyword">byte</span>, err error)</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>实例化：</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// split默认是ScanLines</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewScanner</span><span class="params">(r io.Reader)</span> *<span class="title">Scanner</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> &amp;Scanner&#123;</span><br><span class="line">		r:            r,</span><br><span class="line">		split:        ScanLines,</span><br><span class="line">		maxTokenSize: MaxScanTokenSize,</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>方法：</strong></p>
+<p><code>Scan</code> 方法：获取当前位置的 token（token 可以通过 Bytes 或 Text 方法获取），并让 Scanner 的扫描位置移动到下一个 token（有点类似于 Iterator 的 next）。</p>
+<ul>
+<li>当扫描因到达 Reader 末尾或遇到错误停止时，本方法会返回 false。</li>
+<li>Scan 方法返回 false，此时 Err 方法会返回扫描时出现的错误，如果是 io.EOF，Err 方法将返回 nil。</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Scanner)</span> <span class="title">Scan</span><span class="params">()</span> <span class="title">bool</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<p>其他方法：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 返回扫描时遇到的第一个非EOF错误</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Scanner)</span> <span class="title">Err</span><span class="params">()</span> <span class="title">error</span></span></span><br><span class="line"><span class="comment">// 返回上一次Scan调用生成的token（底层数组指向数据在下一次Scan调用后可能会被重写）</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Scanner)</span> <span class="title">Bytes</span><span class="params">()</span> []<span class="title">byte</span></span></span><br><span class="line"><span class="comment">// 返回上一次Scan调用生成的token（创建一个字符串来保存token）</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Scanner)</span> <span class="title">Text</span><span class="params">()</span> <span class="title">string</span></span></span><br><span class="line"><span class="comment">// 设定split函数</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Scanner)</span> <span class="title">Split</span><span class="params">(split SplitFunc)</span></span></span><br><span class="line"><span class="comment">// 设置初始的buffer和最大的buffer大小来去扫描</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *Scanner)</span> <span class="title">Buffer</span><span class="params">(buf []<span class="keyword">byte</span>, max <span class="keyword">int</span>)</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>示例：</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestScannerWithScanLines</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	reader := strings.NewReader(<span class="string">"hello world.\nit is ok\n666"</span>)</span><br><span class="line">	scanner := bufio.NewScanner(reader)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> scanner.Scan() &#123;</span><br><span class="line">		text := scanner.Text()</span><br><span class="line">		fmt.Println(text)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// output:</span></span><br><span class="line"><span class="comment">// hello world.</span></span><br><span class="line"><span class="comment">// it is ok</span></span><br><span class="line"><span class="comment">// 666</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestScannerWithScanWords</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	reader := strings.NewReader(<span class="string">"hello world. 666"</span>)</span><br><span class="line">	scanner := bufio.NewScanner(reader)</span><br><span class="line">	scanner.Split(bufio.ScanWords)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> scanner.Scan() &#123;</span><br><span class="line">		text := scanner.Text()</span><br><span class="line">		fmt.Println(text)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// output:</span></span><br><span class="line"><span class="comment">// hello</span></span><br><span class="line"><span class="comment">// world.</span></span><br><span class="line"><span class="comment">// 666</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestScannerWithScanBytes</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	reader := strings.NewReader(<span class="string">"hello"</span>)</span><br><span class="line">	scanner := bufio.NewScanner(reader)</span><br><span class="line">	scanner.Split(bufio.ScanBytes)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> scanner.Scan() &#123;</span><br><span class="line">		text := scanner.Text()</span><br><span class="line">		fmt.Println(text)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// output:</span></span><br><span class="line"><span class="comment">// h</span></span><br><span class="line"><span class="comment">// e</span></span><br><span class="line"><span class="comment">// l</span></span><br><span class="line"><span class="comment">// l</span></span><br><span class="line"><span class="comment">// o</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestScannerWithScanRunes</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	reader := strings.NewReader(<span class="string">"天气ok"</span>)</span><br><span class="line">	scanner := bufio.NewScanner(reader)</span><br><span class="line">	scanner.Split(bufio.ScanRunes)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> scanner.Scan() &#123;</span><br><span class="line">		text := scanner.Text()</span><br><span class="line">		fmt.Println(text)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// output:</span></span><br><span class="line"><span class="comment">// 天</span></span><br><span class="line"><span class="comment">// 气</span></span><br><span class="line"><span class="comment">// o</span></span><br><span class="line"><span class="comment">// k</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p>以上所有示例可在 <a href="https://github.com/wcig/go-study-example/blob/master/ch12_io/bufio/bufio_test.go" target="_blank" rel="noopener">github</a>  查看</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Golang/" rel="tag"># Golang</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/09/06/golang/22.Go%E6%A0%87%E5%87%86%E5%BA%93-ioutil/" rel="next" title="Go标准库-ioutil">
+                <i class="fa fa-chevron-left"></i> Go标准库-ioutil
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/09/08/golang/24.Go%E6%A0%87%E5%87%86%E5%BA%93-os/" rel="prev" title="Go标准库-os">
+                Go标准库-os <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="Wcig" />
+            
+              <p class="site-author-name" itemprop="name">Wcig</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">33</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/wcig" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-常量"><span class="nav-text">1. 常量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-变量"><span class="nav-text">2. 变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-类型和方法"><span class="nav-text">3. 类型和方法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-bufio-Reader"><span class="nav-text">3.1 bufio.Reader</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-Writer"><span class="nav-text">3.2 Writer</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-bufio-Scanner"><span class="nav-text">3.3 bufio.Scanner</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Wcig</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

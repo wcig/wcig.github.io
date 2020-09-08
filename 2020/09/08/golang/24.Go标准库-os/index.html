@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Golang," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="1. 常量12345678910const (    O_RDONLY int &#x3D; syscall.O_RDONLY &#x2F;&#x2F; 只读模式打开文件    O_WRONLY int &#x3D; syscall.O_WRONLY &#x2F;&#x2F; 只写模式打开文件    O_RDWR   int &#x3D; syscall.O_RDWR   &#x2F;&#x2F; 读写模式打开文件    O_APPEND int &#x3D; syscall.O_APPEND">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Go标准库-os">
+<meta property="og:url" content="https://wcig.github.io/2020/09/08/golang/24.Go%E6%A0%87%E5%87%86%E5%BA%93-os/index.html">
+<meta property="og:site_name" content="Wcig&#39;s Blog">
+<meta property="og:description" content="1. 常量12345678910const (    O_RDONLY int &#x3D; syscall.O_RDONLY &#x2F;&#x2F; 只读模式打开文件    O_WRONLY int &#x3D; syscall.O_WRONLY &#x2F;&#x2F; 只写模式打开文件    O_RDWR   int &#x3D; syscall.O_RDWR   &#x2F;&#x2F; 读写模式打开文件    O_APPEND int &#x3D; syscall.O_APPEND">
+<meta property="article:published_time" content="2020-09-08T14:20:00.000Z">
+<meta property="article:modified_time" content="2020-09-08T14:21:53.560Z">
+<meta property="article:author" content="Wcig">
+<meta property="article:tag" content="Golang">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://wcig.github.io/2020/09/08/golang/24.Go标准库-os/"/>
+
+
+
+
+
+  <title>Go标准库-os | Wcig's Blog</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Wcig's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://wcig.github.io/2020/09/08/golang/24.Go%E6%A0%87%E5%87%86%E5%BA%93-os/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Wcig">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wcig's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Go标准库-os</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-09-08T22:20:00+08:00">
+                2020-09-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Golang/" itemprop="url" rel="index">
+                    <span itemprop="name">Golang</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="1-常量"><a href="#1-常量" class="headerlink" title="1. 常量"></a>1. 常量</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> (</span><br><span class="line">    O_RDONLY <span class="keyword">int</span> = syscall.O_RDONLY <span class="comment">// 只读模式打开文件</span></span><br><span class="line">    O_WRONLY <span class="keyword">int</span> = syscall.O_WRONLY <span class="comment">// 只写模式打开文件</span></span><br><span class="line">    O_RDWR   <span class="keyword">int</span> = syscall.O_RDWR   <span class="comment">// 读写模式打开文件</span></span><br><span class="line">    O_APPEND <span class="keyword">int</span> = syscall.O_APPEND <span class="comment">// 写操作时将数据附加到文件尾部</span></span><br><span class="line">    O_CREATE <span class="keyword">int</span> = syscall.O_CREAT  <span class="comment">// 如果不存在将创建一个新文件</span></span><br><span class="line">    O_EXCL   <span class="keyword">int</span> = syscall.O_EXCL   <span class="comment">// 和O_CREATE配合使用，文件必须不存在</span></span><br><span class="line">    O_SYNC   <span class="keyword">int</span> = syscall.O_SYNC   <span class="comment">// 打开文件用于同步I/O</span></span><br><span class="line">    O_TRUNC  <span class="keyword">int</span> = syscall.O_TRUNC  <span class="comment">// 如果可能，打开时清空文件</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="2-变量"><a href="#2-变量" class="headerlink" title="2. 变量"></a>2. 变量</h3><p>Stdin、Stdout 和 Stderr 是指向标准输入、标准输出、标准错误输出的文件描述符。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> (</span><br><span class="line">    Stdin  = NewFile(<span class="keyword">uintptr</span>(syscall.Stdin), <span class="string">"/dev/stdin"</span>)</span><br><span class="line">    Stdout = NewFile(<span class="keyword">uintptr</span>(syscall.Stdout), <span class="string">"/dev/stdout"</span>)</span><br><span class="line">    Stderr = NewFile(<span class="keyword">uintptr</span>(syscall.Stderr), <span class="string">"/dev/stderr"</span>)</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="3-类型："><a href="#3-类型：" class="headerlink" title="3. 类型："></a>3. 类型：</h3><h4 id="3-1-File"><a href="#3-1-File" class="headerlink" title="3.1 File"></a>3.1 File</h4><p><code>os.File</code> 类型表示一个打开的文件描述符。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> File <span class="keyword">struct</span> &#123;</span><br><span class="line">	*file</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>函数：</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Create</span><span class="params">(name <span class="keyword">string</span>)</span> <span class="params">(*File, error)</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewFile</span><span class="params">(fd <span class="keyword">uintptr</span>, name <span class="keyword">string</span>)</span> *<span class="title">File</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Open</span><span class="params">(name <span class="keyword">string</span>)</span> <span class="params">(*File, error)</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">OpenFile</span><span class="params">(name <span class="keyword">string</span>, flag <span class="keyword">int</span>, perm FileMode)</span> <span class="params">(*File, error)</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>方法：</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 修改当前工作目录为f,如果f不是目录返回错误</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(f *File)</span> <span class="title">Chdir</span><span class="params">()</span> <span class="title">error</span></span></span><br><span class="line"><span class="comment">// 修改文件模式</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(f *File)</span> <span class="title">Chmod</span><span class="params">(mode FileMode)</span> <span class="title">error</span></span></span><br><span class="line"><span class="comment">// 修改文件用户id和组id</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(f *File)</span> <span class="title">Chown</span><span class="params">(uid, gid <span class="keyword">int</span>)</span> <span class="title">error</span></span></span><br><span class="line"><span class="comment">// 关闭文件</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(f *File)</span> <span class="title">Close</span><span class="params">()</span> <span class="title">error</span></span></span><br><span class="line"><span class="comment">// 返回文件f的整数unix文件描述符</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(f *File)</span> <span class="title">Fd</span><span class="params">()</span> <span class="title">uintptr</span></span></span><br><span class="line"><span class="comment">// 返回文件名称</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(f *File)</span> <span class="title">Name</span><span class="params">()</span> <span class="title">string</span></span></span><br><span class="line"><span class="comment">// 实现io.Reader接口读取</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(f *File)</span> <span class="title">Read</span><span class="params">(b []<span class="keyword">byte</span>)</span> <span class="params">(n <span class="keyword">int</span>, err error)</span></span></span><br><span class="line"><span class="comment">// 实现io.ReaderAt接口读取</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(f *File)</span> <span class="title">ReadAt</span><span class="params">(b []<span class="keyword">byte</span>, off <span class="keyword">int64</span>)</span> <span class="params">(n <span class="keyword">int</span>, err error)</span></span></span><br><span class="line"><span class="comment">// 实现io.ReaderFrom接口读取 (1.15)</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(f *File)</span> <span class="title">ReadFrom</span><span class="params">(r io.Reader)</span> <span class="params">(n <span class="keyword">int64</span>, err error)</span></span></span><br><span class="line"><span class="comment">// 返回目录f下n个文件FileInfo(按目录排序),n&gt;0返回最多nge,n&lt;=0返回所有</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(f *File)</span> <span class="title">Readdir</span><span class="params">(n <span class="keyword">int</span>)</span> <span class="params">([]FileInfo, error)</span></span></span><br><span class="line"><span class="comment">// 返回目录f下n个文件名称(按目录排序),n&gt;0返回最多nge,n&lt;=0返回所有</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(f *File)</span> <span class="title">Readdirnames</span><span class="params">(n <span class="keyword">int</span>)</span> <span class="params">(names []<span class="keyword">string</span>, err error)</span></span></span><br><span class="line"><span class="comment">// 实现io.Seeker接口</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(f *File)</span> <span class="title">Seek</span><span class="params">(offset <span class="keyword">int64</span>, whence <span class="keyword">int</span>)</span> <span class="params">(ret <span class="keyword">int64</span>, err error)</span></span></span><br><span class="line"><span class="comment">// 为文件设置一个读和写的过期时间（等价于同时调用SetReadDeadline、SetWriteDeadline）</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(f *File)</span> <span class="title">SetDeadline</span><span class="params">(t time.Time)</span> <span class="title">error</span></span></span><br><span class="line"><span class="comment">// 为文件设置读的过期时间</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(f *File)</span> <span class="title">SetReadDeadline</span><span class="params">(t time.Time)</span> <span class="title">error</span></span></span><br><span class="line"><span class="comment">// 为文件设置写的过期时间</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(f *File)</span> <span class="title">SetWriteDeadline</span><span class="params">(t time.Time)</span> <span class="title">error</span></span></span><br><span class="line"><span class="comment">// 返回文件信息FileInfo和错误</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(f *File)</span> <span class="title">Stat</span><span class="params">()</span> <span class="params">(FileInfo, error)</span></span></span><br><span class="line"><span class="comment">// 提交文件内容到文件稳定存储，通常表示将文件系统最近写入的数据的内存拷贝刷新到磁盘</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(f *File)</span> <span class="title">Sync</span><span class="params">()</span> <span class="title">error</span></span></span><br><span class="line"><span class="comment">// 返回原始文件，实现了syscall.Conn接口</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(f *File)</span> <span class="title">SyscallConn</span><span class="params">()</span> <span class="params">(syscall.RawConn, error)</span></span></span><br><span class="line"><span class="comment">// 改变文件f大小</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(f *File)</span> <span class="title">Truncate</span><span class="params">(size <span class="keyword">int64</span>)</span> <span class="title">error</span></span></span><br><span class="line"><span class="comment">// 实现io.Writer接口写入</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(f *File)</span> <span class="title">Write</span><span class="params">(b []<span class="keyword">byte</span>)</span> <span class="params">(n <span class="keyword">int</span>, err error)</span></span></span><br><span class="line"><span class="comment">// 实现io.WriterAt接口写入</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(f *File)</span> <span class="title">WriteAt</span><span class="params">(b []<span class="keyword">byte</span>, off <span class="keyword">int64</span>)</span> <span class="params">(n <span class="keyword">int</span>, err error)</span></span></span><br><span class="line"><span class="comment">// 实现io.StringWriter接口写入</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(f *File)</span> <span class="title">WriteString</span><span class="params">(s <span class="keyword">string</span>)</span> <span class="params">(n <span class="keyword">int</span>, err error)</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="3-2-FileInfo"><a href="#3-2-FileInfo" class="headerlink" title="3.2 FileInfo"></a>3.2 FileInfo</h4><p><code>os.FileInfo</code> 用于描述一个文件对象.</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> FileInfo <span class="keyword">interface</span> &#123;</span><br><span class="line">    Name() <span class="keyword">string</span>       <span class="comment">// 文件的名字（不含扩展名）</span></span><br><span class="line">    Size() <span class="keyword">int64</span>        <span class="comment">// 普通文件返回值表示其大小；其他文件的返回值含义各系统不同</span></span><br><span class="line">    Mode() FileMode     <span class="comment">// 文件的模式位</span></span><br><span class="line">    ModTime() time.Time <span class="comment">// 文件的修改时间</span></span><br><span class="line">    IsDir() <span class="keyword">bool</span>        <span class="comment">// 等价于Mode().IsDir()</span></span><br><span class="line">    Sys() <span class="keyword">interface</span>&#123;&#125;   <span class="comment">// 底层数据来源（可以返回nil）</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>函数：</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 返回文件描述对象FileInfo（如果为符号链接则返回符号链接的文件描述对象）</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Lstat</span><span class="params">(name <span class="keyword">string</span>)</span> <span class="params">(FileInfo, error)</span></span></span><br><span class="line"><span class="comment">// 返回文件描述对象FileInfo</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Stat</span><span class="params">(name <span class="keyword">string</span>)</span> <span class="params">(FileInfo, error)</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>获取文件FileInfo:</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// FileInfo</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestGetFileInfo</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	filename := <span class="string">"temp"</span></span><br><span class="line">	os.Create(filename)</span><br><span class="line">	<span class="keyword">defer</span> os.Remove(filename)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 方式1: os.Stat()</span></span><br><span class="line">	fileInfo, err := os.Stat(filename)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		t.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Println(fileInfo.IsDir())   <span class="comment">// false</span></span><br><span class="line">	fmt.Println(fileInfo.Mode())    <span class="comment">// -rw-rw-r--</span></span><br><span class="line">	fmt.Println(fileInfo.Name())    <span class="comment">// temp</span></span><br><span class="line">	fmt.Println(fileInfo.Size())    <span class="comment">// 0</span></span><br><span class="line">	fmt.Println(fileInfo.ModTime()) <span class="comment">// 2020-09-07 19:46:26.432748332 +0800 CST</span></span><br><span class="line">	fmt.Println(fileInfo.Sys())     <span class="comment">// &amp;&#123;2050 5113192 1 33204 1000 1000 0 0 0 4096 0 &#123;1599479186 432748332&#125; &#123;1599479186 432748332&#125; &#123;1599479186 432748332&#125; [0 0 0]&#125;</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// 相对路径 -&gt; 绝对路径</span></span><br><span class="line">	path, err := filepath.Abs(fileInfo.Name())</span><br><span class="line">	fmt.Println(path) <span class="comment">// /home/yangbo/Documents/workspace/go-study-example/ch12_io/os/temp</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// 方式2: file.Stat()</span></span><br><span class="line">	f, err := os.Open(filename)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		t.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line">	fileInfo2, _ := f.Stat()</span><br><span class="line">	fmt.Println(fileInfo2.Name()) <span class="comment">// temp</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="3-3-FileMode"><a href="#3-3-FileMode" class="headerlink" title="3.3 FileMode"></a>3.3 FileMode</h4><p><code>os.FileMode</code> 表示文件的权限。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> FileMode <span class="keyword">uint32</span></span><br></pre></td></tr></table></figure>
+
+<p>FileMode代表文件的模式和权限位。这些字位在所有的操作系统都有相同的含义，因此文件的信息可以在不同的操作系统之间安全的移植。不是所有的位都能用于所有的系统，唯一共有的是用于表示目录的ModeDir位。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> (</span><br><span class="line">    <span class="comment">// 单字符是被String方法用于格式化的属性缩写。</span></span><br><span class="line">    ModeDir        FileMode = <span class="number">1</span> &lt;&lt; (<span class="number">32</span> - <span class="number">1</span> - <span class="literal">iota</span>) <span class="comment">// d: 目录</span></span><br><span class="line">    ModeAppend                                     <span class="comment">// a: 只能写入，且只能写入到末尾</span></span><br><span class="line">    ModeExclusive                                  <span class="comment">// l: 用于执行</span></span><br><span class="line">    ModeTemporary                                  <span class="comment">// T: 临时文件（非备份文件）</span></span><br><span class="line">    ModeSymlink                                    <span class="comment">// L: 符号链接（不是快捷方式文件）</span></span><br><span class="line">    ModeDevice                                     <span class="comment">// D: 设备</span></span><br><span class="line">    ModeNamedPipe                                  <span class="comment">// p: 命名管道（FIFO）</span></span><br><span class="line">    ModeSocket                                     <span class="comment">// S: Unix域socket</span></span><br><span class="line">    ModeSetuid                                     <span class="comment">// u: 表示文件具有其创建者用户id权限</span></span><br><span class="line">    ModeSetgid                                     <span class="comment">// g: 表示文件具有其创建者组id的权限</span></span><br><span class="line">    ModeCharDevice                                 <span class="comment">// c: 字符设备，需已设置ModeDevice</span></span><br><span class="line">    ModeSticky                                     <span class="comment">// t: 只有root/创建者能删除/移动文件</span></span><br><span class="line">    <span class="comment">// 覆盖所有类型位（用于通过&amp;获取类型位），对普通文件，所有这些位都不应被设置</span></span><br><span class="line">    ModeType = ModeDir | ModeSymlink | ModeNamedPipe | ModeSocket | ModeDevice</span><br><span class="line">    ModePerm FileMode = <span class="number">0777</span> <span class="comment">// 覆盖所有Unix权限位（用于通过&amp;获取类型位）</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>方法:</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 返回文件的权限 (drwxrwxrwx)</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(m FileMode)</span> <span class="title">String</span><span class="params">()</span> <span class="title">string</span></span></span><br><span class="line"><span class="comment">// 文件是否为目录</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(m FileMode)</span> <span class="title">IsDir</span><span class="params">()</span> <span class="title">bool</span></span></span><br><span class="line"><span class="comment">// 文件是否是普通文件</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(m FileMode)</span> <span class="title">IsRegular</span><span class="params">()</span> <span class="title">bool</span></span></span><br><span class="line"><span class="comment">// 文件的unix权限位</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(m FileMode)</span> <span class="title">IsRegular</span><span class="params">()</span> <span class="title">bool</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>获取文件的FileMode:</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// FileMode</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestGetFileMode</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	filename := <span class="string">"temp"</span></span><br><span class="line">	os.Create(filename)</span><br><span class="line">	<span class="keyword">defer</span> os.Remove(filename)</span><br><span class="line"></span><br><span class="line">	fileInfo, err := os.Stat(filename)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		t.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line">	fileMode := fileInfo.Mode()</span><br><span class="line">	fmt.Println(fileMode.IsDir(), fileMode.IsRegular(), fileMode.Perm(), fileMode.String()) <span class="comment">// false true -rw-rw-r-- -rw-rw-r--</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Chmod</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestChmod</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	filename := <span class="string">"temp"</span></span><br><span class="line">	os.Create(filename)</span><br><span class="line">	<span class="keyword">defer</span> os.Remove(filename)</span><br><span class="line"></span><br><span class="line">	fileInfo, _ := os.Stat(filename)</span><br><span class="line">	fmt.Println(fileInfo.Mode()) <span class="comment">// -rw-rw-r--</span></span><br><span class="line"></span><br><span class="line">	newMode := os.FileMode(<span class="number">0777</span>) <span class="comment">// 权限格式: 0xxx</span></span><br><span class="line">	os.Chmod(filename, newMode)</span><br><span class="line"></span><br><span class="line">	fileInfo, _ = os.Stat(filename)</span><br><span class="line">	fmt.Println(fileInfo.Mode()) <span class="comment">// -rwxrwxrwx</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="3-4-其他"><a href="#3-4-其他" class="headerlink" title="3.4 其他"></a>3.4 其他</h4><p><strong>LinkError:</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 记录Link、Symlink、Rename的系统调用出现的错误以及导致错误的路径</span></span><br><span class="line"><span class="keyword">type</span> LinkError <span class="keyword">struct</span> &#123;</span><br><span class="line">	Op  <span class="keyword">string</span></span><br><span class="line">	Old <span class="keyword">string</span></span><br><span class="line">	New <span class="keyword">string</span></span><br><span class="line">	Err error</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 以字符串类型返回错误</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(e *LinkError)</span> <span class="title">Error</span><span class="params">()</span> <span class="title">string</span></span> </span><br><span class="line"><span class="comment">// 返回非包装的原生错误</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(e *LinkError)</span> <span class="title">Unwrap</span><span class="params">()</span> <span class="title">error</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>PathError:</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 记录错误、进行的操作和导致错误的路径</span></span><br><span class="line"><span class="keyword">type</span> PathError <span class="keyword">struct</span> &#123;</span><br><span class="line">	Op   <span class="keyword">string</span></span><br><span class="line">	Path <span class="keyword">string</span></span><br><span class="line">	Err  error</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 以字符串类型返回错误</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(e *PathError)</span> <span class="title">Error</span><span class="params">()</span> <span class="title">string</span></span></span><br><span class="line"><span class="comment">// 返回是否错误为超时错误</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(e *PathError)</span> <span class="title">Timeout</span><span class="params">()</span> <span class="title">bool</span></span></span><br><span class="line"><span class="comment">// 返回非包装的原生错误</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(e *PathError)</span> <span class="title">Unwrap</span><span class="params">()</span> <span class="title">error</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>Process:</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 保存由StartProcess创建的进程信息</span></span><br><span class="line"><span class="keyword">type</span> Process <span class="keyword">struct</span> &#123;</span><br><span class="line">	Pid    <span class="keyword">int</span></span><br><span class="line">	handle <span class="keyword">uintptr</span>      <span class="comment">// handle is accessed atomically on Windows</span></span><br><span class="line">	isdone <span class="keyword">uint32</span>       <span class="comment">// process has been successfully waited on, non zero if true</span></span><br><span class="line">	sigMu  sync.RWMutex <span class="comment">// avoid race between wait and signal</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// FindProcess根据进程id查找一个运行中的进程。函数返回的进程对象可以用于获取其关于底层操作系统进程的信息。</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">FindProcess</span><span class="params">(pid <span class="keyword">int</span>)</span> <span class="params">(*Process, error)</span></span></span><br><span class="line"><span class="comment">// StartProcess使用提供的属性、程序名、命令行参数开始一个新进程。StartProcess函数是一个低水平的接口。os/exec包提供了高水平的接口，应该尽量使用该包。如果出错，错误的底层类型会是*PathError。</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">StartProcess</span><span class="params">(name <span class="keyword">string</span>, argv []<span class="keyword">string</span>, attr *ProcAttr)</span> <span class="params">(*Process, error)</span></span></span><br><span class="line"><span class="comment">// kill进程</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *Process)</span> <span class="title">Kill</span><span class="params">()</span> <span class="title">error</span></span></span><br><span class="line"><span class="comment">// 释放进程的所有资源</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *Process)</span> <span class="title">Release</span><span class="params">()</span> <span class="title">error</span></span></span><br><span class="line"><span class="comment">// 向进程发送一个信号</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *Process)</span> <span class="title">Signal</span><span class="params">(sig Signal)</span> <span class="title">error</span></span></span><br><span class="line"><span class="comment">// 阻塞直到进程退出，然后返回一个描述ProcessState描述进程的状态和可能的错误。Wait方法会释放绑定到进程p的所有资源。在大多数操作系统中，进程p必须是当前进程的子进程，否则会返回错误。</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *Process)</span> <span class="title">Wait</span><span class="params">()</span> <span class="params">(*ProcessState, error)</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>ProcessState:</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 保存Wait函数报告的已退出进程信息</span></span><br><span class="line"><span class="keyword">type</span> ProcessState <span class="keyword">struct</span> &#123;</span><br><span class="line">	pid    <span class="keyword">int</span>                <span class="comment">// The process's id.</span></span><br><span class="line">	status syscall.WaitStatus <span class="comment">// System-dependent status info.</span></span><br><span class="line">	rusage *syscall.Rusage</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 返回已退出进程的退出code，如果该进程没有退出或被一个信号终止则返回-1</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *ProcessState)</span> <span class="title">ExitCode</span><span class="params">()</span> <span class="title">int</span></span></span><br><span class="line"><span class="comment">// 报告进程是否已退出</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *ProcessState)</span> <span class="title">Exited</span><span class="params">()</span> <span class="title">bool</span></span></span><br><span class="line"><span class="comment">// 返回已退出进程的进程id</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *ProcessState)</span> <span class="title">Pid</span><span class="params">()</span> <span class="title">int</span></span></span><br><span class="line"><span class="comment">// 以字符串返回该退出进程信息</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *ProcessState)</span> <span class="title">String</span><span class="params">()</span> <span class="title">string</span></span></span><br><span class="line"><span class="comment">// 报告进程是否成功退出</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *ProcessState)</span> <span class="title">Success</span><span class="params">()</span> <span class="title">bool</span></span></span><br><span class="line"><span class="comment">// 返回有关该进程的系统相关退出信息。将其转换为适当的基础类型，例如Unix上的syscall.WaitStatus，以访问其内容。</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *ProcessState)</span> <span class="title">Sys</span><span class="params">()</span> <span class="title">interface</span></span>&#123;&#125;</span><br><span class="line"><span class="comment">// 返回该退出进程的系统相关资源使用信息</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *ProcessState)</span> <span class="title">SysUsage</span><span class="params">()</span> <span class="title">interface</span></span>&#123;&#125;</span><br><span class="line"><span class="comment">// 返回退出该进程和其子进程的系统cpu时间</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *ProcessState)</span> <span class="title">SystemTime</span><span class="params">()</span> <span class="title">time</span>.<span class="title">Duration</span></span></span><br><span class="line"><span class="comment">// 返回退出该进程和其子进程的用户cpu时间</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *ProcessState)</span> <span class="title">UserTime</span><span class="params">()</span> <span class="title">time</span>.<span class="title">Duration</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>Signal：</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 描述操作系统信号</span></span><br><span class="line"><span class="keyword">type</span> Signal <span class="keyword">interface</span> &#123;</span><br><span class="line">    String() <span class="keyword">string</span></span><br><span class="line">    Signal() <span class="comment">// to distinguish from other Stringers</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> (</span><br><span class="line">    Interrupt Signal = syscall.SIGINT</span><br><span class="line">    Kill      Signal = syscall.SIGKILL</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>SyscallError:</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 记录特定系统调用的错误</span></span><br><span class="line"><span class="keyword">type</span> SyscallError <span class="keyword">struct</span> &#123;</span><br><span class="line">    Syscall <span class="keyword">string</span></span><br><span class="line">    Err     error</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 以字符串类型返回该错误</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(e *SyscallError)</span> <span class="title">Error</span><span class="params">()</span> <span class="title">string</span></span></span><br><span class="line"><span class="comment">// 报告该错误是否为超时错误</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(e *SyscallError)</span> <span class="title">Timeout</span><span class="params">()</span> <span class="title">bool</span></span></span><br><span class="line"><span class="comment">// 返回非包装的原生错误</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(e *SyscallError)</span> <span class="title">Unwrap</span><span class="params">()</span> <span class="title">error</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="4-函数"><a href="#4-函数" class="headerlink" title="4. 函数"></a>4. 函数</h3><h4 id="4-1-Create"><a href="#4-1-Create" class="headerlink" title="4.1 Create"></a>4.1 Create</h4><p><code>os.Create</code> 函数接收一个文件名来创建或截断文件文件，返回值包括文件的描述符和错误。</p>
+<ul>
+<li>创建文件时以 0666 权限。</li>
+<li>如果文件不存在将创建，如果已经存在会把截断它变成空文件。</li>
+<li>返回的文件描述符可以进行 I/O 操作，模式为 O_RDWR。</li>
+<li>如果错误，错误底层类型是 *PathError</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Create</span><span class="params">(name <span class="keyword">string</span>)</span> <span class="params">(*File, error)</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="4-2-Open"><a href="#4-2-Open" class="headerlink" title="4.2 Open"></a>4.2 Open</h4><p><code>os.Open</code> 函数用于打开一个文件去读取，其接收一个文件名，返回文件描述符和错误。对应文件描述符具有 O_RDWR 模式，底层错误类型为 *PathError。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Open</span><span class="params">(name <span class="keyword">string</span>)</span> <span class="params">(*File, error)</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="4-3-OpenFile"><a href="#4-3-OpenFile" class="headerlink" title="4.3 OpenFile"></a>4.3 OpenFile</h4><p><code>os.OpenFile</code> 是一个更具有一般性的打开文件的函数。其接收文件名 name，选项 flag（如O_RDWR）和 指定权限（如0666），返回文件的描述符和错误。同样底层错误类型是 *PathError。一般使用 Open、Create 代替该函数。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">OpenFile</span><span class="params">(name <span class="keyword">string</span>, flag <span class="keyword">int</span>, perm FileMode)</span> <span class="params">(*File, error)</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="4-4-Mkdir"><a href="#4-4-Mkdir" class="headerlink" title="4.4 Mkdir"></a>4.4 Mkdir</h4><p><code>os.Mkdir</code> 用于创建目录。其指定目录名和指定权限，如果错误则返回 *PathError 类型错误。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Mkdir</span><span class="params">(name <span class="keyword">string</span>, perm FileMode)</span> <span class="title">error</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="4-5-MkdirAll"><a href="#4-5-MkdirAll" class="headerlink" title="4.5 MkdirAll"></a>4.5 MkdirAll</h4><p><code>os.MkdirAll</code> 同样用于创建目录，与 <code>os.Mkdir</code> 区别在于如果该目录的上级目录不存在时会自动创建。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">MkdirAll</span><span class="params">(path <span class="keyword">string</span>, perm FileMode)</span> <span class="title">error</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="4-6-Remove"><a href="#4-6-Remove" class="headerlink" title="4.6 Remove"></a>4.6 Remove</h4><p><code>os.Remove</code> 删除文件或目录, 如果出现错误那么错误类型是 *PathError.</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Remove</span><span class="params">(name <span class="keyword">string</span>)</span> <span class="title">error</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="4-7-RemoveAll"><a href="#4-7-RemoveAll" class="headerlink" title="4.7 RemoveAll"></a>4.7 RemoveAll</h4><p><code>os.RemoveAll</code> 用于删除目录以及下级对象。它会尝试删除所有文件，除非遇到错误并返回。如果 path 目录不存在将返回 nil 而不是错误。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">RemoveAll</span><span class="params">(path <span class="keyword">string</span>)</span> <span class="title">error</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="4-8-Chmod"><a href="#4-8-Chmod" class="headerlink" title="4.8 Chmod"></a>4.8 Chmod</h4><p><code>os.Chmod</code> 类似于 linux 的 chmod 命令，用于修改文件的权限。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Chmod</span><span class="params">(name <span class="keyword">string</span>, mode FileMode)</span> <span class="title">error</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="4-9-Chown"><a href="#4-9-Chown" class="headerlink" title="4.9 Chown"></a>4.9 Chown</h4><p><code>os.Chown</code> 类似于 linux 的 chown 命令。</p>
+<p>Chmod修改name指定的文件对象的用户id和组id。如果name指定的文件是一个符号链接，它会修改该链接的目的地文件的用户id和组id。如果出错，会返回*PathError底层类型的错误。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Chown</span><span class="params">(name <span class="keyword">string</span>, uid, gid <span class="keyword">int</span>)</span> <span class="title">error</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="4-10-Rename"><a href="#4-10-Rename" class="headerlink" title="4.10 Rename"></a>4.10 Rename</h4><p><code>os.Rename</code> 用户重命名文件.</p>
+<p>如果 newpath 已经存在或不是一个目录则进行重命名. 可能受操作系统限制.</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Rename</span><span class="params">(oldpath, newpath <span class="keyword">string</span>)</span> <span class="title">error</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="4-11-其他"><a href="#4-11-其他" class="headerlink" title="4.11 其他"></a>4.11 其他</h4><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 切换当前工作目录为指定目录（如果有错误则为*PathError类型）</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Chdir</span><span class="params">(dir <span class="keyword">string</span>)</span> <span class="title">error</span></span></span><br><span class="line"><span class="comment">// 修改文件的access time和modify time（如果有错误则为*PathError类型）</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Chtimes</span><span class="params">(name <span class="keyword">string</span>, atime time.Time, mtime time.Time)</span> <span class="title">error</span></span></span><br><span class="line"><span class="comment">// 返回启动当前进程的可执行文件的路径（返回绝对路径除非遇到错误）</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Executable</span><span class="params">()</span> <span class="params">(<span class="keyword">string</span>, error)</span></span></span><br><span class="line"><span class="comment">// Exit让当前程序以给出的状态码code退出。一般来说，状态码0表示成功，非0表示出错。程序会立刻终止，defer的函数不会被执行。（code范围[0,125]）</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Exit</span><span class="params">(code <span class="keyword">int</span>)</span></span></span><br><span class="line"><span class="comment">// 返回调用者的有效组id（windows返回-1）</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Getegid</span><span class="params">()</span> <span class="title">int</span></span></span><br><span class="line"><span class="comment">// 返回调用者的有效用户id（windows返回-1）</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Geteuid</span><span class="params">()</span> <span class="title">int</span></span></span><br><span class="line"><span class="comment">// 返回调用者的组id（windows返回-1）</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Getgid</span><span class="params">()</span> <span class="title">int</span></span></span><br><span class="line"><span class="comment">// 返回调用者的用户id（windows返回-1）</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Getuid</span><span class="params">()</span> <span class="title">int</span></span></span><br><span class="line"><span class="comment">// 返回调用者属于的用户组列表</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Getgroups</span><span class="params">()</span> <span class="params">([]<span class="keyword">int</span>, error)</span></span></span><br><span class="line"><span class="comment">// 返回底层系统的内存页大小</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Getpagesize</span><span class="params">()</span> <span class="title">int</span></span></span><br><span class="line"><span class="comment">// 返回调用者的进程id</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Getpid</span><span class="params">()</span> <span class="title">int</span></span></span><br><span class="line"><span class="comment">//返回调用者的进程的父进程id</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Getppid</span><span class="params">()</span> <span class="title">int</span></span></span><br><span class="line"><span class="comment">// 返回一个对应当前工作目录的根路径。如果当前目录可以经过多条路径抵达（因为硬链接），Getwd会返回其中一个。</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Getwd</span><span class="params">()</span> <span class="params">(dir <span class="keyword">string</span>, err error)</span></span></span><br><span class="line"><span class="comment">// 返回内核提供的主机名</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Hostname</span><span class="params">()</span> <span class="params">(name <span class="keyword">string</span>, err error)</span></span></span><br><span class="line"><span class="comment">// 返回一个布尔值说明该错误是否表示一个文件或目录已经存在。ErrExist和一些系统调用错误会使它返回真。</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">IsExist</span><span class="params">(err error)</span> <span class="title">bool</span></span></span><br><span class="line"><span class="comment">// 返回一个布尔值说明该错误是否表示一个文件或目录不存在。ErrNotExist和一些系统调用错误会使它返回真。</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">IsNotExist</span><span class="params">(err error)</span> <span class="title">bool</span></span></span><br><span class="line"><span class="comment">// 判断c是否是目录分隔符</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">IsPathSeparator</span><span class="params">(c <span class="keyword">uint8</span>)</span> <span class="title">bool</span></span></span><br><span class="line"><span class="comment">// 返回一个布尔值说明该错误是否表示因权限不足要求被拒绝。ErrPermission和一些系统调用错误会使它返回真。</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">IsPermission</span><span class="params">(err error)</span> <span class="title">bool</span></span></span><br><span class="line"><span class="comment">// 返回一个布尔值说明该错误是否表示超时</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">IsTimeout</span><span class="params">(err error)</span> <span class="title">bool</span></span></span><br><span class="line"><span class="comment">// 修改文件的用户id和组id (如果文件为符号连接则只修改该链接而不是链接指向的文件)</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Lchown</span><span class="params">(name <span class="keyword">string</span>, uid, gid <span class="keyword">int</span>)</span> <span class="title">error</span></span></span><br><span class="line"><span class="comment">// 以newname创建一个硬链接指向oldname文件 (硬链接)</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Link</span><span class="params">(oldname, newname <span class="keyword">string</span>)</span> <span class="title">error</span></span></span><br><span class="line"><span class="comment">// 返回一个指定系统调用名称和错误细节的SyscallError。如果err为nil，本函数会返回nil。</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewSyscallError</span><span class="params">(syscall <span class="keyword">string</span>, err error)</span> <span class="title">error</span></span></span><br><span class="line"><span class="comment">// Pipe返回一对关联的文件对象。从r的读取将返回写入w的数据。本函数会返回两个文件对象和可能的错误。</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Pipe</span><span class="params">()</span> <span class="params">(r *File, w *File, err error)</span></span></span><br><span class="line"><span class="comment">// 返回符号链接指向文件名</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Readlink</span><span class="params">(name <span class="keyword">string</span>)</span> <span class="params">(<span class="keyword">string</span>, error)</span></span></span><br><span class="line"><span class="comment">// 判断2个文件是否为同一个文件 (符号链接文件与指向文件对比为true)</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">SameFile</span><span class="params">(fi1, fi2 FileInfo)</span> <span class="title">bool</span></span></span><br><span class="line"><span class="comment">// 以newname创建一个符号链接指向oldname文件 (软链接)</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Symlink</span><span class="params">(oldname, newname <span class="keyword">string</span>)</span> <span class="title">error</span></span></span><br><span class="line"><span class="comment">// 返回系统的默认临时目录</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TempDir</span><span class="params">()</span> <span class="title">string</span></span></span><br><span class="line"><span class="comment">// 改变文件的大小,如果文件为符号链接则修改其指向文件的大小 (不会影响io当前位置,size小于文件大小则截断文件,超出部分被丢失)</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Truncate</span><span class="params">(name <span class="keyword">string</span>, size <span class="keyword">int64</span>)</span> <span class="title">error</span></span></span><br><span class="line"><span class="comment">// 返回用户的cache目录</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">UserCacheDir</span><span class="params">()</span> <span class="params">(<span class="keyword">string</span>, error)</span></span></span><br><span class="line"><span class="comment">// 返回用户的config目录</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">UserConfigDir</span><span class="params">()</span> <span class="params">(<span class="keyword">string</span>, error)</span></span></span><br><span class="line"><span class="comment">// 返回用户的根目录</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">UserHomeDir</span><span class="params">()</span> <span class="params">(<span class="keyword">string</span>, error)</span></span></span><br><span class="line"><span class="comment">// 为给定文件描述和名字创建新文件</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewFile</span><span class="params">(fd <span class="keyword">uintptr</span>, name <span class="keyword">string</span>)</span> *<span class="title">File</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>环境变量相关：</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 清除所有环境变量</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Clearenv</span><span class="params">()</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 返回所有环境变量的拷贝（格式：key=value）</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Environ</span><span class="params">()</span> []<span class="title">string</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 基于mapping函数替换$(var)或$var</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Expand</span><span class="params">(s <span class="keyword">string</span>, mapping <span class="keyword">func</span>(<span class="keyword">string</span>)</span> <span class="title">string</span>) <span class="title">string</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 基于当前环境变量替换$(var)或$var （os.ExpandEnv(s)等价于os.Expand(s, os.Getenv)）</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">ExpandEnv</span><span class="params">(s <span class="keyword">string</span>)</span> <span class="title">string</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 返回环境变量中key对应的值，没有则为空</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Getenv</span><span class="params">(key <span class="keyword">string</span>)</span> <span class="title">string</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 获取环境变量key对应值,存在返回对应值和true,不存在返回空字符串和false</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">LookupEnv</span><span class="params">(key <span class="keyword">string</span>)</span> <span class="params">(<span class="keyword">string</span>, <span class="keyword">bool</span>)</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 设置环境变量</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Setenv</span><span class="params">(key, value <span class="keyword">string</span>)</span> <span class="title">error</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 删除环境变量</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Unsetenv</span><span class="params">(key <span class="keyword">string</span>)</span> <span class="title">error</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="5-补充"><a href="#5-补充" class="headerlink" title="5. 补充"></a>5. 补充</h3><h4 id="5-1-Linux文件的access-time-change-time-modify-time"><a href="#5-1-Linux文件的access-time-change-time-modify-time" class="headerlink" title="5.1 Linux文件的access time, change time, modify time"></a>5.1 Linux文件的access time, change time, modify time</h4><p>在 Linux 中我们新建一个文件后，可以通过 <code>stat</code> 命令查看文件的信息：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> touch temp</span></span><br><span class="line"><span class="meta">$</span><span class="bash"> <span class="built_in">stat</span> temp</span></span><br><span class="line">  File: 'temp'</span><br><span class="line">  Size: 0         	Blocks: 0          IO Block: 4096   regular empty file</span><br><span class="line">Device: fd01h/64769d	Inode: 1333180     Links: 1</span><br><span class="line">Access: (0644/-rw-r--r--)  Uid: (    0/    root)   Gid: (    0/    root)</span><br><span class="line">Access: 2020-09-07 23:14:30.782390123 +0800</span><br><span class="line">Modify: 2020-09-07 23:14:30.782390123 +0800</span><br><span class="line">Change: 2020-09-07 23:14:30.782390123 +0800</span><br><span class="line"> Birth: -</span><br></pre></td></tr></table></figure>
+
+<p>3个时间分别对应：</p>
+<ul>
+<li>access time：文件最后一次被读取时间</li>
+<li>change time：文件最后一次元数据被修改（例如权限、位置、用户属性、组属性等）</li>
+<li>modify time：文件最后一次被修改（文件被修改）</li>
+</ul>
+<p>什么情况下3个时间会被修改：</p>
+<ul>
+<li>access time：cat、touch</li>
+<li>change time：chmod、chown、mv</li>
+<li>modify time：vi命令对文件做修改</li>
+</ul>
+<p>以上所有示例可在 <a href="https://github.com/wcig/go-study-example/blob/master/ch12_io/os/os_test.go" target="_blank" rel="noopener">github</a>  查看</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Golang/" rel="tag"># Golang</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/09/07/golang/23.Go%E6%A0%87%E5%87%86%E5%BA%93-bufio/" rel="next" title="Go标准库-bufio">
+                <i class="fa fa-chevron-left"></i> Go标准库-bufio
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="Wcig" />
+            
+              <p class="site-author-name" itemprop="name">Wcig</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">33</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/wcig" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-常量"><span class="nav-text">1. 常量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-变量"><span class="nav-text">2. 变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-类型："><span class="nav-text">3. 类型：</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-File"><span class="nav-text">3.1 File</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-FileInfo"><span class="nav-text">3.2 FileInfo</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-FileMode"><span class="nav-text">3.3 FileMode</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-4-其他"><span class="nav-text">3.4 其他</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-函数"><span class="nav-text">4. 函数</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4-1-Create"><span class="nav-text">4.1 Create</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-2-Open"><span class="nav-text">4.2 Open</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-3-OpenFile"><span class="nav-text">4.3 OpenFile</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-4-Mkdir"><span class="nav-text">4.4 Mkdir</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-5-MkdirAll"><span class="nav-text">4.5 MkdirAll</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-6-Remove"><span class="nav-text">4.6 Remove</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-7-RemoveAll"><span class="nav-text">4.7 RemoveAll</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-8-Chmod"><span class="nav-text">4.8 Chmod</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-9-Chown"><span class="nav-text">4.9 Chown</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-10-Rename"><span class="nav-text">4.10 Rename</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-11-其他"><span class="nav-text">4.11 其他</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-补充"><span class="nav-text">5. 补充</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#5-1-Linux文件的access-time-change-time-modify-time"><span class="nav-text">5.1 Linux文件的access time, change time, modify time</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Wcig</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

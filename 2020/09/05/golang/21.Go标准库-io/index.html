@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Golang," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="1. 常量123456&#x2F;&#x2F; Seek whence values.const (	SeekStart   &#x3D; 0 &#x2F;&#x2F; seek relative to the origin of the file	SeekCurrent &#x3D; 1 &#x2F;&#x2F; seek relative to the current offset	SeekEnd     &#x3D; 2 &#x2F;&#x2F; seek relative to the end)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Go标准库-io">
+<meta property="og:url" content="https://wcig.github.io/2020/09/05/golang/21.Go%E6%A0%87%E5%87%86%E5%BA%93-io/index.html">
+<meta property="og:site_name" content="Wcig&#39;s Blog">
+<meta property="og:description" content="1. 常量123456&#x2F;&#x2F; Seek whence values.const (	SeekStart   &#x3D; 0 &#x2F;&#x2F; seek relative to the origin of the file	SeekCurrent &#x3D; 1 &#x2F;&#x2F; seek relative to the current offset	SeekEnd     &#x3D; 2 &#x2F;&#x2F; seek relative to the end)">
+<meta property="article:published_time" content="2020-09-05T14:20:00.000Z">
+<meta property="article:modified_time" content="2020-09-08T14:23:16.326Z">
+<meta property="article:author" content="Wcig">
+<meta property="article:tag" content="Golang">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://wcig.github.io/2020/09/05/golang/21.Go标准库-io/"/>
+
+
+
+
+
+  <title>Go标准库-io | Wcig's Blog</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Wcig's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://wcig.github.io/2020/09/05/golang/21.Go%E6%A0%87%E5%87%86%E5%BA%93-io/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Wcig">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wcig's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Go标准库-io</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-09-05T22:20:00+08:00">
+                2020-09-05
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Golang/" itemprop="url" rel="index">
+                    <span itemprop="name">Golang</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="1-常量"><a href="#1-常量" class="headerlink" title="1. 常量"></a>1. 常量</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Seek whence values.</span></span><br><span class="line"><span class="keyword">const</span> (</span><br><span class="line">	SeekStart   = <span class="number">0</span> <span class="comment">// seek relative to the origin of the file</span></span><br><span class="line">	SeekCurrent = <span class="number">1</span> <span class="comment">// seek relative to the current offset</span></span><br><span class="line">	SeekEnd     = <span class="number">2</span> <span class="comment">// seek relative to the end</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="2-变量"><a href="#2-变量" class="headerlink" title="2. 变量"></a>2. 变量</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ErrShortWrite means that a write accepted fewer bytes than requested</span></span><br><span class="line"><span class="comment">// but failed to return an explicit error.</span></span><br><span class="line"><span class="keyword">var</span> ErrShortWrite = errors.New(<span class="string">"short write"</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// ErrShortBuffer means that a read required a longer buffer than was provided.</span></span><br><span class="line"><span class="keyword">var</span> ErrShortBuffer = errors.New(<span class="string">"short buffer"</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// EOF is the error returned by Read when no more input is available.</span></span><br><span class="line"><span class="comment">// Functions should return EOF only to signal a graceful end of input.</span></span><br><span class="line"><span class="comment">// If the EOF occurs unexpectedly in a structured data stream,</span></span><br><span class="line"><span class="comment">// the appropriate error is either ErrUnexpectedEOF or some other error</span></span><br><span class="line"><span class="comment">// giving more detail.</span></span><br><span class="line"><span class="keyword">var</span> EOF = errors.New(<span class="string">"EOF"</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// ErrUnexpectedEOF means that EOF was encountered in the</span></span><br><span class="line"><span class="comment">// middle of reading a fixed-size block or data structure.</span></span><br><span class="line"><span class="keyword">var</span> ErrUnexpectedEOF = errors.New(<span class="string">"unexpected EOF"</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// ErrNoProgress is returned by some clients of an io.Reader when</span></span><br><span class="line"><span class="comment">// many calls to Read have failed to return any data or error,</span></span><br><span class="line"><span class="comment">// usually the sign of a broken io.Reader implementation.</span></span><br><span class="line"><span class="keyword">var</span> ErrNoProgress = errors.New(<span class="string">"multiple Read calls return no data or error"</span>)</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="3-接口"><a href="#3-接口" class="headerlink" title="3. 接口"></a>3. 接口</h3><h4 id="3-1-Reader-Writer接口"><a href="#3-1-Reader-Writer接口" class="headerlink" title="3.1 Reader, Writer接口"></a>3.1 Reader, Writer接口</h4><p>Reader 接口为包含基本读取方法的接口, 各种文件的读取都实现了这个接口.</p>
+<p>Read 方法读取 len(p) 个字节到 p 中, 返回读取到的字节数以及错误. 错误可能是错误, nil 和<br>EOF. 如果需要实现该接口, 建议返回的 n  和 err 是互斥的.</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Reader <span class="keyword">interface</span> &#123;</span><br><span class="line">	Read(p []<span class="keyword">byte</span>) (n <span class="keyword">int</span>, err error)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>Writer 接口为包含基础写入方法的接口.</p>
+<p>Write 方法从 p 中读取 len(p) 个字节进行写入, 返回写入成功的字节数以及错误.</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Writer <span class="keyword">interface</span> &#123;</span><br><span class="line">	Write(p []<span class="keyword">byte</span>) (n <span class="keyword">int</span>, err error)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>实现了 io.Reader 或 io.Writer 接口的类型:</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>io.Reader</th>
+<th>io.Writer</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>os.File</td>
+<td>√</td>
+<td>√</td>
+</tr>
+<tr>
+<td>strings.Reader</td>
+<td>√</td>
+<td>×</td>
+</tr>
+<tr>
+<td>bufio.Reader</td>
+<td>√</td>
+<td>×</td>
+</tr>
+<tr>
+<td>bufio.Writer</td>
+<td>×</td>
+<td>√</td>
+</tr>
+<tr>
+<td>bytes.Buffer</td>
+<td>√</td>
+<td>√</td>
+</tr>
+<tr>
+<td>bytes.Reader</td>
+<td>√</td>
+<td>×</td>
+</tr>
+<tr>
+<td>compress.Reader<br>gzip.Reader<br>crypto.Reader<br>cipher.StreamReader<br>encoding.Reader<br>csv.Reader<br></td>
+<td>√</td>
+<td>×</td>
+</tr>
+<tr>
+<td>compress.Writer<br/>gzip.Writer<br/>crypto.Writer<br/>cipher.StreamWriter<br/>encoding.Writer<br/>csv.Writer<br/></td>
+<td>×</td>
+<td>√</td>
+</tr>
+<tr>
+<td>crypto.Conn<br>tls.Conn</td>
+<td>√</td>
+<td>√</td>
+</tr>
+<tr>
+<td>mime<br>multipart.Part</td>
+<td>√</td>
+<td>×</td>
+</tr>
+<tr>
+<td>net</td>
+<td>√</td>
+<td>×</td>
+</tr>
+<tr>
+<td>conn</td>
+<td>×</td>
+<td>√</td>
+</tr>
+</tbody></table>
+<h4 id="3-2-Closer接口"><a href="#3-2-Closer接口" class="headerlink" title="3.2. Closer接口"></a>3.2. Closer接口</h4><p>Closer 接口包装了基本的关闭方法.</p>
+<p>文件, 数据库连接等需要手动关闭资源都实现了该接口. 编程中一般配合 defer 使用.</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Closer <span class="keyword">interface</span> &#123;</span><br><span class="line">	Close() error</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="3-3-Seeker接口"><a href="#3-3-Seeker接口" class="headerlink" title="3.3 Seeker接口"></a>3.3 Seeker接口</h4><p>Seeker 接口包装了基本的偏移方法.</p>
+<p>Seek 方法偏移指定偏移量, 用于下一次的读取或写入. offset 指定偏移量, whence 指定起始位置, 返回新的相对于文件起始的偏移量和错误:</p>
+<ul>
+<li>os.SeekStart: 相对于文件起始</li>
+<li>os.SeekCurrent: 相对于文件当前位置</li>
+<li>os.SeekStop: 相对于文件结尾位置</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Seeker <span class="keyword">interface</span> &#123;</span><br><span class="line">	Seek(offset <span class="keyword">int64</span>, whence <span class="keyword">int</span>) (<span class="keyword">int64</span>, error)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="3-4-Reader-Writer-Closer-Seeker组合接口"><a href="#3-4-Reader-Writer-Closer-Seeker组合接口" class="headerlink" title="3.4 Reader, Writer, Closer, Seeker组合接口"></a>3.4 Reader, Writer, Closer, Seeker组合接口</h4><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ReadWriter is the interface that groups the basic Read and Write methods.</span></span><br><span class="line"><span class="keyword">type</span> ReadWriter <span class="keyword">interface</span> &#123;</span><br><span class="line">	Reader</span><br><span class="line">	Writer</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// ReadCloser is the interface that groups the basic Read and Close methods.</span></span><br><span class="line"><span class="keyword">type</span> ReadCloser <span class="keyword">interface</span> &#123;</span><br><span class="line">	Reader</span><br><span class="line">	Closer</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// WriteCloser is the interface that groups the basic Write and Close methods.</span></span><br><span class="line"><span class="keyword">type</span> WriteCloser <span class="keyword">interface</span> &#123;</span><br><span class="line">	Writer</span><br><span class="line">	Closer</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// ReadWriteCloser is the interface that groups the basic Read, Write and Close methods.</span></span><br><span class="line"><span class="keyword">type</span> ReadWriteCloser <span class="keyword">interface</span> &#123;</span><br><span class="line">	Reader</span><br><span class="line">	Writer</span><br><span class="line">	Closer</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// ReadSeeker is the interface that groups the basic Read and Seek methods.</span></span><br><span class="line"><span class="keyword">type</span> ReadSeeker <span class="keyword">interface</span> &#123;</span><br><span class="line">	Reader</span><br><span class="line">	Seeker</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// WriteSeeker is the interface that groups the basic Write and Seek methods.</span></span><br><span class="line"><span class="keyword">type</span> WriteSeeker <span class="keyword">interface</span> &#123;</span><br><span class="line">	Writer</span><br><span class="line">	Seeker</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// ReadWriteSeeker is the interface that groups the basic Read, Write and Seek methods.</span></span><br><span class="line"><span class="keyword">type</span> ReadWriteSeeker <span class="keyword">interface</span> &#123;</span><br><span class="line">	Reader</span><br><span class="line">	Writer</span><br><span class="line">	Seeker</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="3-5-ReaderForm-WriterTo接口"><a href="#3-5-ReaderForm-WriterTo接口" class="headerlink" title="3.5 ReaderForm, WriterTo接口"></a>3.5 ReaderForm, WriterTo接口</h4><p>ReaderFrom 和 WriterTo 接口都是只包装一个读和写方法的接口.</p>
+<p>ReaderForm 接口的 ReadForm 方法, 从 r 中读取数据直到遇到 EOF 或错误, 返回读取的字节数和错误. 除 io.EOF 外, 读取过程中遇到的任何错误都将返回.</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> ReaderFrom <span class="keyword">interface</span> &#123;</span><br><span class="line">	ReadFrom(r Reader) (n <span class="keyword">int64</span>, err error)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>WriterTo 接口的 WriteTo 方法, 将写入数据到 w, 直到没有数据写入或发生错误. 返回写入的字节数和错误, 写入过程出现的任何错误都将返回.</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> WriterTo <span class="keyword">interface</span> &#123;</span><br><span class="line">	WriteTo(w Writer) (n <span class="keyword">int64</span>, err error)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>示例:</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ReaderFrom接口</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestReaderFrom</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	file, err := os.Open(<span class="string">"temp1"</span>) <span class="comment">// 文本: hello world.</span></span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		t.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">defer</span> file.Close()</span><br><span class="line"></span><br><span class="line">	buf := bytes.NewBufferString(<span class="string">"ok"</span>)</span><br><span class="line">	num, err := buf.ReadFrom(file)</span><br><span class="line">	fmt.Println(num, err) <span class="comment">// 12 &lt;nil&gt;</span></span><br><span class="line">	fmt.Println(buf.String()) <span class="comment">// okhello world.</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// WriterTo接口</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestWriterTo</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	file, err := os.Create(<span class="string">"temp2"</span>)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		t.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">defer</span> file.Close()</span><br><span class="line"></span><br><span class="line">	buf := bytes.NewBufferString(<span class="string">"hello ok"</span>)</span><br><span class="line">	num, err := buf.WriteTo(file)</span><br><span class="line">	fmt.Println(num, err) <span class="comment">// 8 &lt;nil&gt;</span></span><br><span class="line">	fmt.Println(buf.String()) <span class="comment">// hello ok</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="3-6-ReaderAt-WriterAt接口"><a href="#3-6-ReaderAt-WriterAt接口" class="headerlink" title="3.6 ReaderAt, WriterAt接口"></a>3.6 ReaderAt, WriterAt接口</h4><blockquote>
+<p>ReaderAt 是一个封装的基本接口 ReadAt 方法。</p>
+<ul>
+<li>ReadAt 从输入源偏移量 off 处, 读取 lens(p) 个字节到 p 中. 它返回的字节数读 (0 &lt;= n &lt;= len(p))) 和所遇到的任何错误。</li>
+<li>当 ReadAt 返回 n&lt;len(p) 时，它返回一个非零错误解释为什么不返回多个字节。 在这方面， ReadAt 比Read更严格。</li>
+<li>即使 ReadAt 返回 n&lt;len(p) 时，它可以在呼叫过程中使用所有的p作为暂存空间的。 如果一些数据可用但不到 len(p) 个字节， ReadAt 块将直到所有的数据是可用的或发生错误。 在这方面 ReadAt 与 Read 是不同的。</li>
+<li>如果 n=len(p)， ReadAt 可能返回 err=EOF 或 err=nil。</li>
+<li>如果 ReadAt 为从输入源带偏移量的读取， ReadAt 将不影响偏移量同时也不被偏移量影响。</li>
+<li>可以对同一个输入源并行 ReadAt 调用。</li>
+</ul>
+</blockquote>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> ReaderAt <span class="keyword">interface</span> &#123;</span><br><span class="line">	ReadAt(p []<span class="keyword">byte</span>, off <span class="keyword">int64</span>) (n <span class="keyword">int</span>, err error)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<blockquote>
+<p>WriterAt 是一个封装的基本接口 WriteAt 方法。</p>
+<ul>
+<li>WriteAt 从 p 中将 len(p) 个字节写入到偏移量 off 处的基本数据流中。它返回从 p 中被写入的字节数 n（0 &lt;= n &lt;= len(p)）以及任何遇到的引起写入提前停止的错误。若 WriteAt 返回的 n &lt; len(p)，它就必须返回一个 非nil 的错误。</li>
+<li>若 WriteAt 携带一个偏移量写入到目标中，WriteAt 应当既不影响偏移量也不被它所影响。</li>
+<li>若被写区域没有重叠，可对相同的目标并行执行 WriteAt 调用。</li>
+</ul>
+</blockquote>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> WriterAt <span class="keyword">interface</span> &#123;</span><br><span class="line">	WriteAt(p []<span class="keyword">byte</span>, off <span class="keyword">int64</span>) (n <span class="keyword">int</span>, err error)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>示例：</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ReaderAt接口</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestReaderAt</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	reader := strings.NewReader(<span class="string">"ok-hello world."</span>)</span><br><span class="line">	p := <span class="built_in">make</span>([]<span class="keyword">byte</span>, <span class="number">6</span>)</span><br><span class="line">	n, err := reader.ReadAt(p, <span class="number">2</span>)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		t.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Printf(<span class="string">"%s, %d\n"</span>, p, n) <span class="comment">// -hello, 6</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// WriterAt接口</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestWriterAt</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	file, err := os.Create(<span class="string">"temp3"</span>)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		t.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">defer</span> file.Close()</span><br><span class="line"></span><br><span class="line">	file.WriteString(<span class="string">"ok-hello world."</span>)</span><br><span class="line">	n, err := file.WriteAt([]<span class="keyword">byte</span>(<span class="string">"666"</span>), <span class="number">8</span>)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		t.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Println(n) <span class="comment">// 3</span></span><br><span class="line">	<span class="comment">// temp3: ok-hello666rld.</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="3-7-其他接口"><a href="#3-7-其他接口" class="headerlink" title="3.7 其他接口"></a>3.7 其他接口</h4><p>ByteReader, ByteWriter 为读取或写入一个字节的接口。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> ByteReader <span class="keyword">interface</span> &#123;</span><br><span class="line">	ReadByte() (<span class="keyword">byte</span>, error)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> ByteWriter <span class="keyword">interface</span> &#123;</span><br><span class="line">	WriteByte(c <span class="keyword">byte</span>) error</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>ByteScanner 为包装了 ByteReader 接口和 UnreadByte 方法的接口。</p>
+<p>调用 UnreadByte 方法后，调用 ReadByte 方法读取到的字节将于前一次调用一样。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> ByteScanner <span class="keyword">interface</span> &#123;</span><br><span class="line">	ByteReader</span><br><span class="line">	UnreadByte() error</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>RuneReader 为包装了读取一个 UTF-8 unicode 字符方法的接口。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> RuneReader <span class="keyword">interface</span> &#123;</span><br><span class="line">	ReadRune() (r <span class="keyword">rune</span>, size <span class="keyword">int</span>, err error)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>RuneScanner 接口为包装了 RuneReader 接口 和 UnreadRune 方法的接口。其中 UnreadRune 方法与 ByteScanner 接口的 UnreadByte 方法功能类似。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> RuneScanner <span class="keyword">interface</span> &#123;</span><br><span class="line">	RuneReader</span><br><span class="line">	UnreadRune() error</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>StringWriter 为包装了一个写入字符串方法的接口。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> StringWriter <span class="keyword">interface</span> &#123;</span><br><span class="line">	WriteString(s <span class="keyword">string</span>) (n <span class="keyword">int</span>, err error)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="4-类型"><a href="#4-类型" class="headerlink" title="4. 类型"></a>4. 类型</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> LimitedReader <span class="keyword">struct</span> &#123;</span><br><span class="line">	R Reader <span class="comment">// underlying reader</span></span><br><span class="line">	N <span class="keyword">int64</span>  <span class="comment">// max bytes remaining</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 实现了Read, Seek, ReadAt接口</span></span><br><span class="line"><span class="keyword">type</span> SectionReader <span class="keyword">struct</span> &#123;</span><br><span class="line">	r     ReaderAt</span><br><span class="line">	base  <span class="keyword">int64</span></span><br><span class="line">	off   <span class="keyword">int64</span></span><br><span class="line">	limit <span class="keyword">int64</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> teeReader <span class="keyword">struct</span> &#123;</span><br><span class="line">	r Reader</span><br><span class="line">	w Writer</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="5-函数"><a href="#5-函数" class="headerlink" title="5. 函数"></a>5. 函数</h3><h4 id="5-1-Copy-CopyN-CopyBuffer"><a href="#5-1-Copy-CopyN-CopyBuffer" class="headerlink" title="5.1 Copy, CopyN, CopyBuffer"></a>5.1 Copy, CopyN, CopyBuffer</h4><blockquote>
+<p>Copy() 方法从 src 拷贝数据到 dst 中, 返回拷贝成功的字节数和拷贝过程中出现的第一个错误.</p>
+<ul>
+<li>成功的拷贝返回的 err == nil, 而不是 EOF. 因为 Copy 的定义就是从 src 读取数据直到 EOF, 当读取遇到 EOF 将不会认为是个错误.</li>
+<li>如果 src 实现了 WriterTo 接口, 拷贝过程中将直接调用 src.WriteTo(dst). 如果 dst 实现了 ReaderFrom 接口, 则拷贝过程中将直接调用 dst.ReadForm(src).</li>
+</ul>
+</blockquote>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Copy</span><span class="params">(dst Writer, src Reader)</span> <span class="params">(written <span class="keyword">int64</span>, err error)</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<blockquote>
+<p>CopyN() 方法从 src 拷贝 n 个字节到 dst 中, 返回拷贝成功的字节数和期间出现的错误.</p>
+<ul>
+<li>当返回 written == n 时, err == nil.</li>
+<li>如果 dst 实现了 ReaderForm 接口, 拷贝时将使用 ReadForm 方法.</li>
+</ul>
+</blockquote>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">CopyN</span><span class="params">(dst Writer, src Reader, n <span class="keyword">int64</span>)</span> <span class="params">(written <span class="keyword">int64</span>, err error)</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<blockquote>
+<p>CopyBuffer() 方法与 Copy() 方法类似, 唯一的区别是带缓冲的拷贝. 如果 buf 为 nil, 则默认分配一个字节的缓冲, 如果 len(buf) 将会 panic.</p>
+</blockquote>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">CopyBuffer</span><span class="params">(dst Writer, src Reader, buf []<span class="keyword">byte</span>)</span> <span class="params">(written <span class="keyword">int64</span>, err error)</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>示例:</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Copy</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestCopy</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	rb := &amp;bytes.Buffer&#123;&#125;</span><br><span class="line">	wb := &amp;bytes.Buffer&#123;&#125;</span><br><span class="line"></span><br><span class="line">	rb.WriteString(<span class="string">"hello, world."</span>)</span><br><span class="line">	written, err := io.Copy(wb, rb)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> || written != <span class="number">13</span> &#123;</span><br><span class="line">		t.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line">	assert.True(t, wb.String() == <span class="string">"hello, world."</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// CopyN</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestCopyN</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	rb := &amp;bytes.Buffer&#123;&#125;</span><br><span class="line">	wb := &amp;bytes.Buffer&#123;&#125;</span><br><span class="line"></span><br><span class="line">	rb.WriteString(<span class="string">"hello, world."</span>)</span><br><span class="line">	written, err := io.CopyN(wb, rb, <span class="number">5</span>)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> || written != <span class="number">5</span> &#123;</span><br><span class="line">		t.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line">	assert.True(t, wb.String() == <span class="string">"hello"</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// CopyBuffer</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestCopyBuffer</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	rb := &amp;bytes.Buffer&#123;&#125;</span><br><span class="line">	wb := &amp;bytes.Buffer&#123;&#125;</span><br><span class="line"></span><br><span class="line">	rb.WriteString(<span class="string">"hello, world."</span>)</span><br><span class="line">	io.CopyBuffer(wb, rb, <span class="built_in">make</span>([]<span class="keyword">byte</span>, <span class="number">1</span>))</span><br><span class="line">	<span class="keyword">if</span> wb.String() != <span class="string">"hello, world."</span> &#123;</span><br><span class="line">		t.Errorf(<span class="string">"CopyBuffer did not work properly"</span>)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="5-2-ReadAtLeast-ReadFull"><a href="#5-2-ReadAtLeast-ReadFull" class="headerlink" title="5.2 ReadAtLeast, ReadFull"></a>5.2 ReadAtLeast, ReadFull</h4><blockquote>
+<p>ReadAtLeast 方法从 r 中读取数据到 buf 中，直到读到最少 min 个字节。函数返回读取到的字节数和错误。</p>
+<ul>
+<li>只有当没有字节可以读取时错误是 EOF</li>
+<li>如果一个 EOF 发生在读取小于 min 字节的数据，将返回错误 ErrUnexpectedEOF</li>
+<li>如果 min 大于 buf 的长度，将返回错误 ErrShortBuffer</li>
+<li>当且仅当 err == nil 时，n &gt;= min</li>
+<li>如果已经读取了 min 字节数据时 r 返回错误，此时错误将会被忽略</li>
+</ul>
+</blockquote>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">ReadAtLeast</span><span class="params">(r Reader, buf []<span class="keyword">byte</span>, min <span class="keyword">int</span>)</span> <span class="params">(n <span class="keyword">int</span>, err error)</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<blockquote>
+<p>ReadFull 方法从 r 读取 len(buf) 字节数据到 buf 中，函数返回读取的字节数和错误。</p>
+<ul>
+<li>如果错误为 EOF，则只有没有字节数据读取的情况</li>
+<li>如果 EOF 发生在读取到部分但不是所有字节数据时，返回错 ErrUnexpectedEOF</li>
+<li>返回值 n == len(buf) 只在 err == nil 情况发生</li>
+<li>如果已经读取了 len(buf) 字节数据时 r 返回错误，此时错误将会被忽略</li>
+</ul>
+</blockquote>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">ReadFull</span><span class="params">(r Reader, buf []<span class="keyword">byte</span>)</span> <span class="params">(n <span class="keyword">int</span>, err error)</span></span></span><br></pre></td></tr></table></figure>
+
+<p>ReadAtLeast 与 ReadFull 的唯一区别就是 ReadFull 是将 buf 读满，而 ReadAtLeast 是最少读取 min 字节数。</p>
+<h4 id="5-3-WriteString"><a href="#5-3-WriteString" class="headerlink" title="5.3 WriteString"></a>5.3 WriteString</h4><p>WriteString 方法是将字符串 s 写入到 w 中，返回写入成功的字节数和错误。</p>
+<p>当 w 实现了 StringWriter 接口，将直接调用 WriteString 方法，否则调用 w.Write([]byte(s))。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">WriteString</span><span class="params">(w Writer, s <span class="keyword">string</span>)</span> <span class="params">(n <span class="keyword">int</span>, err error)</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="5-4-MultiReader-MultiWriter"><a href="#5-4-MultiReader-MultiWriter" class="headerlink" title="5.4 MultiReader, MultiWriter"></a>5.4 MultiReader, MultiWriter</h4><p>MultiReader 和 MultiWriter 方法是读取多个 Reder 或 Writer，然后包装成一个 Reader 或 Writer。看源码发现其实就是包装成 multiReader 和 multiWriter 类型返回。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 顺序的读取，直到所有输入源返回EOF则读取返回EOF。如果任意一个Reader返回非nil非EOF错误，读取将返回这个错误</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">MultiReader</span><span class="params">(readers ...Reader)</span> <span class="title">Reader</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 将向所有writer写入。如果任意一个writer返回错误，写入将暂停返回错误</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">MultiWriter</span><span class="params">(writers ...Writer)</span> <span class="title">Writer</span></span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> multiReader <span class="keyword">struct</span> &#123;</span><br><span class="line">	readers []Reader</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> multiWriter <span class="keyword">struct</span> &#123;</span><br><span class="line">	writers []Writer</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>示例：</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// MultiReader</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestMultiReader</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	readers := []io.Reader&#123;</span><br><span class="line">		strings.NewReader(<span class="string">"from strings reader..."</span>),</span><br><span class="line">		bytes.NewBufferString(<span class="string">"from bytes buffer..."</span>),</span><br><span class="line">	&#125;</span><br><span class="line">	reader := io.MultiReader(readers...)</span><br><span class="line">	data := <span class="built_in">make</span>([]<span class="keyword">byte</span>, <span class="number">0</span>, <span class="number">128</span>)</span><br><span class="line">	buf := <span class="built_in">make</span>([]<span class="keyword">byte</span>, <span class="number">10</span>)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> &#123;</span><br><span class="line">		n, err := reader.Read(buf)</span><br><span class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &amp;&amp; err != io.EOF &#123;</span><br><span class="line">			t.Fatal(err)</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		data = <span class="built_in">append</span>(data, buf[:n]...)</span><br><span class="line">		<span class="keyword">if</span> err == io.EOF &#123;</span><br><span class="line">			<span class="keyword">break</span></span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	fmt.Printf(<span class="string">"%s\n"</span>, data) <span class="comment">// from strings reader...from bytes buffer...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// MultiWriter</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestMultiWriter</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	file, err := os.Create(<span class="string">"temp1"</span>)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(err)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">defer</span> file.Close()</span><br><span class="line">	writers := []io.Writer&#123;</span><br><span class="line">		file,</span><br><span class="line">		os.Stdout,</span><br><span class="line">	&#125;</span><br><span class="line">	writer := io.MultiWriter(writers...)</span><br><span class="line">	writer.Write([]<span class="keyword">byte</span>(<span class="string">"hello world.\n"</span>))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="5-5-TeeReader"><a href="#5-5-TeeReader" class="headerlink" title="5.5 TeeReader"></a>5.5 TeeReader</h4><p>TeeReader 返回一个 Reader，它将从 r 中读到的数据写入 w 中。所有经由它处理的从 r 的读取都匹配于对应的对 w 的写入。它没有内部缓存，即写入必须在读取完成前完成。任何在写入时遇到的错误都将作为读取错误返回。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TeeReader</span><span class="params">(r Reader, w Writer)</span> <span class="title">Reader</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> teeReader <span class="keyword">struct</span> &#123;</span><br><span class="line">	r Reader</span><br><span class="line">	w Writer</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>示例：</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// TeeReader</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestTeeReader</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	reader := io.TeeReader(strings.NewReader(<span class="string">"hello world.\n"</span>), os.Stdout)</span><br><span class="line">	reader.Read(<span class="built_in">make</span>([]<span class="keyword">byte</span>, <span class="number">20</span>))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>以上所有示例可在 <a href="https://github.com/wcig/go-study-example/blob/master/ch12_io/io/io_test.go" target="_blank" rel="noopener">github</a>  查看</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Golang/" rel="tag"># Golang</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/08/19/golang/08.Go%E5%87%BD%E6%95%B0/" rel="next" title="Go函数">
+                <i class="fa fa-chevron-left"></i> Go函数
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/09/06/golang/22.Go%E6%A0%87%E5%87%86%E5%BA%93-ioutil/" rel="prev" title="Go标准库-ioutil">
+                Go标准库-ioutil <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="Wcig" />
+            
+              <p class="site-author-name" itemprop="name">Wcig</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">33</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/wcig" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-常量"><span class="nav-text">1. 常量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-变量"><span class="nav-text">2. 变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-接口"><span class="nav-text">3. 接口</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-Reader-Writer接口"><span class="nav-text">3.1 Reader, Writer接口</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-Closer接口"><span class="nav-text">3.2. Closer接口</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-Seeker接口"><span class="nav-text">3.3 Seeker接口</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-4-Reader-Writer-Closer-Seeker组合接口"><span class="nav-text">3.4 Reader, Writer, Closer, Seeker组合接口</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-5-ReaderForm-WriterTo接口"><span class="nav-text">3.5 ReaderForm, WriterTo接口</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-6-ReaderAt-WriterAt接口"><span class="nav-text">3.6 ReaderAt, WriterAt接口</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-7-其他接口"><span class="nav-text">3.7 其他接口</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-类型"><span class="nav-text">4. 类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-函数"><span class="nav-text">5. 函数</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#5-1-Copy-CopyN-CopyBuffer"><span class="nav-text">5.1 Copy, CopyN, CopyBuffer</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-2-ReadAtLeast-ReadFull"><span class="nav-text">5.2 ReadAtLeast, ReadFull</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-3-WriteString"><span class="nav-text">5.3 WriteString</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-4-MultiReader-MultiWriter"><span class="nav-text">5.4 MultiReader, MultiWriter</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-5-TeeReader"><span class="nav-text">5.5 TeeReader</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Wcig</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
