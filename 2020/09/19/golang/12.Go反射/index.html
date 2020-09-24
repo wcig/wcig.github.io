@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Golang," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="1. 反射特性 反射可以提高程序的灵活性, 尤其是对于 interface{} 反射可以获取对象值成员变量属性和值, 也可以获取其公有方法 通过反射可以修改对象的属性值, 也可以动态调用公有方法, 但需要注意值和指针类型  2. 反射使用2.1 TypeOf, ValueOf在 reflect 包, 可以通过 TypeOf() 和 ValueOf() 方法获取结构体成员变量的属性和值. 12345">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Go 反射">
+<meta property="og:url" content="https://wcig.github.io/2020/09/19/golang/12.Go%E5%8F%8D%E5%B0%84/index.html">
+<meta property="og:site_name" content="Wcig&#39;s Blog">
+<meta property="og:description" content="1. 反射特性 反射可以提高程序的灵活性, 尤其是对于 interface{} 反射可以获取对象值成员变量属性和值, 也可以获取其公有方法 通过反射可以修改对象的属性值, 也可以动态调用公有方法, 但需要注意值和指针类型  2. 反射使用2.1 TypeOf, ValueOf在 reflect 包, 可以通过 TypeOf() 和 ValueOf() 方法获取结构体成员变量的属性和值. 12345">
+<meta property="article:published_time" content="2020-09-19T09:00:00.000Z">
+<meta property="article:modified_time" content="2020-09-24T16:06:08.801Z">
+<meta property="article:author" content="Wcig">
+<meta property="article:tag" content="Golang">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://wcig.github.io/2020/09/19/golang/12.Go反射/"/>
+
+
+
+
+
+  <title>Go 反射 | Wcig's Blog</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Wcig's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://wcig.github.io/2020/09/19/golang/12.Go%E5%8F%8D%E5%B0%84/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Wcig">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wcig's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Go 反射</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-09-19T17:00:00+08:00">
+                2020-09-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Golang/" itemprop="url" rel="index">
+                    <span itemprop="name">Golang</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h4 id="1-反射特性"><a href="#1-反射特性" class="headerlink" title="1. 反射特性"></a>1. 反射特性</h4><ul>
+<li>反射可以提高程序的灵活性, 尤其是对于 interface{}</li>
+<li>反射可以获取对象值成员变量属性和值, 也可以获取其公有方法</li>
+<li>通过反射可以修改对象的属性值, 也可以动态调用公有方法, 但需要注意值和指针类型</li>
+</ul>
+<h4 id="2-反射使用"><a href="#2-反射使用" class="headerlink" title="2. 反射使用"></a>2. 反射使用</h4><h5 id="2-1-TypeOf-ValueOf"><a href="#2-1-TypeOf-ValueOf" class="headerlink" title="2.1 TypeOf, ValueOf"></a>2.1 TypeOf, ValueOf</h5><p>在 reflect 包, 可以通过 <code>TypeOf()</code> 和 <code>ValueOf()</code> 方法获取结构体成员变量的属性和值.</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// TypeOf</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestTypeOf</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	u := User&#123;Id: <span class="number">1</span>, Name: <span class="string">"tom"</span>&#125;</span><br><span class="line"></span><br><span class="line">	_type := reflect.TypeOf(u)</span><br><span class="line">	fmt.Println(<span class="string">"user type:"</span>, _type)</span><br><span class="line"></span><br><span class="line">	num := _type.NumField()</span><br><span class="line">	fmt.Println(<span class="string">"user filed num:"</span>, num)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; num; i++ &#123;</span><br><span class="line">		filed := _type.Field(i)</span><br><span class="line">		fmt.Printf(<span class="string">"user filed: %d, %+v\n"</span>, i, filed)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// output:</span></span><br><span class="line"><span class="comment">// user type: ch13_reflect.User</span></span><br><span class="line"><span class="comment">// user filed num: 2</span></span><br><span class="line"><span class="comment">// user filed: 0, &#123;Name:Id PkgPath: Type:int Tag:json:"id" Offset:0 Index:[0] Anonymous:false&#125;</span></span><br><span class="line"><span class="comment">// user filed: 1, &#123;Name:Name PkgPath: Type:string Tag:json:"name" Offset:8 Index:[1] Anonymous:false&#125;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// ValueOf</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestValueOf</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	u := User&#123;Id: <span class="number">1</span>, Name: <span class="string">"tom"</span>&#125;</span><br><span class="line"></span><br><span class="line">	_value := reflect.ValueOf(u)</span><br><span class="line">	fmt.Println(<span class="string">"user value:"</span>, _value)</span><br><span class="line"></span><br><span class="line">	num := _value.NumField()</span><br><span class="line">	fmt.Println(<span class="string">"user value num:"</span>, num)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; num; i++ &#123;</span><br><span class="line">		value := _value.Field(i)</span><br><span class="line">		fmt.Printf(<span class="string">"user value: %d, %+v\n"</span>, i, value)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// output:</span></span><br><span class="line"><span class="comment">// user value: &#123;1 tom&#125;</span></span><br><span class="line"><span class="comment">// user value num: 2</span></span><br><span class="line"><span class="comment">// user value: 0, 1</span></span><br><span class="line"><span class="comment">// user value: 1, tom</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h5 id="2-2-反射获取成员变量"><a href="#2-2-反射获取成员变量" class="headerlink" title="2.2 反射获取成员变量"></a>2.2 反射获取成员变量</h5><p>获取成员变量属性和值:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 获取成员变量值</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestGetFileValue</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	u := User&#123;Id: <span class="number">1</span>, Name: <span class="string">"tom"</span>&#125;</span><br><span class="line">	_value := reflect.ValueOf(u)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// Filed</span></span><br><span class="line">	idVal1 := _value.Field(<span class="number">0</span>)</span><br><span class="line">	id1 := idVal1.Interface().(<span class="keyword">int</span>)</span><br><span class="line"></span><br><span class="line">	nameVal1 := _value.Field(<span class="number">1</span>)</span><br><span class="line">	name1 := nameVal1.Interface().(<span class="keyword">string</span>)</span><br><span class="line">	fmt.Println(<span class="string">"Filed:"</span>, reflect.TypeOf(id1).String(), id1, reflect.TypeOf(name1).String(), name1)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// FieldByName</span></span><br><span class="line">	idVal2 := _value.FieldByName(<span class="string">"Id"</span>)</span><br><span class="line">	id2 := idVal2.Interface().(<span class="keyword">int</span>)</span><br><span class="line"></span><br><span class="line">	nameVal2 := _value.FieldByName(<span class="string">"Name"</span>)</span><br><span class="line">	name2 := nameVal2.Interface().(<span class="keyword">string</span>)</span><br><span class="line">	fmt.Println(<span class="string">"FieldByName:"</span>, reflect.TypeOf(id2).String(), id2, reflect.TypeOf(name2).String(), name2)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// get field name</span></span><br><span class="line">	_type := reflect.TypeOf(u)</span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; _type.NumField(); i++ &#123;</span><br><span class="line">		fmt.Println(<span class="string">"filed:"</span>, i, _type.Field(i).Name)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>私有成员变量的值不能获取:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 私有成员变量: 私有成员变量类型可以获取,但是值不能获取</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestPrivateField</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	<span class="keyword">type</span> user <span class="keyword">struct</span> &#123;</span><br><span class="line">		Id   <span class="keyword">int</span></span><br><span class="line">		name <span class="keyword">string</span></span><br><span class="line">	&#125;</span><br><span class="line">	u := user&#123;Id: <span class="number">1</span>, name: <span class="string">"tom"</span>&#125;</span><br><span class="line"></span><br><span class="line">	_type := reflect.TypeOf(u)</span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; _type.NumField(); i++ &#123;</span><br><span class="line">		fmt.Println(<span class="string">"filed:"</span>, i, _type.Field(i).Name)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	_value := reflect.ValueOf(u)</span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; _value.NumField(); i++ &#123;</span><br><span class="line">		fmt.Println(<span class="string">"value:"</span>, i, _value.Field(i).Interface())</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	iv := _value.FieldByName(<span class="string">"Id"</span>)</span><br><span class="line">	fmt.Println(<span class="string">"id:"</span>, iv.Interface().(<span class="keyword">int</span>))</span><br><span class="line"></span><br><span class="line">	<span class="comment">// nv := _value.FieldByName("name")</span></span><br><span class="line">	<span class="comment">// fmt.Println("name:", nv.Interface().(string)) // error</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// output:</span></span><br><span class="line"><span class="comment">// filed: 0 Id</span></span><br><span class="line"><span class="comment">// filed: 1 name</span></span><br><span class="line"><span class="comment">// value: 0 1</span></span><br><span class="line"><span class="comment">// --- FAIL: TestPrivateField (0.00s)</span></span><br><span class="line"><span class="comment">// panic: reflect.Value.Interface: cannot return value obtained from unexported field or method [recovered]</span></span><br><span class="line"><span class="comment">//	panic: reflect.Value.Interface: cannot return value obtained from unexported field or method</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h5 id="2-3-反射获取方法"><a href="#2-3-反射获取方法" class="headerlink" title="2.3 反射获取方法"></a>2.3 反射获取方法</h5><ul>
+<li>可以通过反射可以获取方法, 也可以通过反射调用方法</li>
+<li>公有方法可以通过反射获取, 私有方法不行</li>
+<li>接收者为值类型方法可以通过反射只能获取值类型方法, 接收者类型为引用方法可以获取值类型和引用类型方法</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 通过反射获取方法</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(u User)</span> <span class="title">Print1</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Printf(<span class="string">"Print1 user id:%d, name:%s\n"</span>, u.Id, u.Name)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(u User)</span> <span class="title">print2</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Printf(<span class="string">"print2 user id:%d, name:%s\n"</span>, u.Id, u.Name)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(u User)</span> <span class="title">Print3</span><span class="params">(prefix <span class="keyword">string</span>)</span></span> &#123;</span><br><span class="line">	fmt.Printf(<span class="string">"Print3 %s user id:%d, name:%s\n"</span>, prefix, u.Id, u.Name)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 私有方法不能通过反射获取</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestGetMethod1</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	u := User&#123;Id: <span class="number">1</span>, Name: <span class="string">"tom"</span>&#125;</span><br><span class="line"></span><br><span class="line">	_type := reflect.TypeOf(u)</span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; _type.NumMethod(); i++ &#123;</span><br><span class="line">		fmt.Println(<span class="string">"method:"</span>, i, _type.Method(i))</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	p1, has := _type.MethodByName(<span class="string">"Print1"</span>)</span><br><span class="line">	fmt.Println(p1, has)</span><br><span class="line">	p2, has := _type.MethodByName(<span class="string">"print2"</span>)</span><br><span class="line">	fmt.Println(p2, has)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// output:</span></span><br><span class="line"><span class="comment">// method: 0 &#123;Print1  func(ch13_reflect.User) &lt;func(ch13_reflect.User) Value&gt; 0&#125;</span></span><br><span class="line"><span class="comment">// method: 1 &#123;Print3  func(ch13_reflect.User, string) &lt;func(ch13_reflect.User, string) Value&gt; 1&#125;</span></span><br><span class="line"><span class="comment">// &#123;Print1  func(ch13_reflect.User) &lt;func(ch13_reflect.User) Value&gt; 0&#125; true</span></span><br><span class="line"><span class="comment">// &#123;  &lt;nil&gt; &lt;invalid Value&gt; 0&#125; false</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Object <span class="keyword">struct</span>&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(o Object)</span> <span class="title">Ok1</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Println(<span class="string">"Ok1"</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(o *Object)</span> <span class="title">Ok2</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Println(<span class="string">"Ok2"</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 接收者为值类型方法可以通过反射只能获取值类型方法, 接收者类型为引用方法可以获取值类型和引用类型方法</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestGetMethod2</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> o Object</span><br><span class="line"></span><br><span class="line">	_type1 := reflect.TypeOf(o)</span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; _type1.NumMethod(); i++ &#123;</span><br><span class="line">		fmt.Println(<span class="string">"method1:"</span>, i, _type1.Method(i))</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	_type2 := reflect.TypeOf(&amp;o)</span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; _type2.NumMethod(); i++ &#123;</span><br><span class="line">		fmt.Println(<span class="string">"method2:"</span>, i, _type2.Method(i))</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// output:</span></span><br><span class="line"><span class="comment">// method1: 0 &#123;Ok1  func(ch13_reflect.Object) &lt;func(ch13_reflect.Object) Value&gt; 0&#125;</span></span><br><span class="line"><span class="comment">// method2: 0 &#123;Ok1  func(*ch13_reflect.Object) &lt;func(*ch13_reflect.Object) Value&gt; 0&#125;</span></span><br><span class="line"><span class="comment">// method2: 1 &#123;Ok2  func(*ch13_reflect.Object) &lt;func(*ch13_reflect.Object) Value&gt; 1&#125;</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h5 id="2-4-反射调用方法"><a href="#2-4-反射调用方法" class="headerlink" title="2.4 反射调用方法"></a>2.4 反射调用方法</h5><ul>
+<li>反射不能获取私有方法, 所以不能通过反射调用私有方法</li>
+<li>方法接收者为值, reflect.ValueOf 传值</li>
+<li>方法接收者为指针, reflect.ValueOf 需传指针</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(u User)</span> <span class="title">Print1</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Printf(<span class="string">"Print1 user id:%d, name:%s\n"</span>, u.Id, u.Name)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(u User)</span> <span class="title">print2</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Printf(<span class="string">"print2 user id:%d, name:%s\n"</span>, u.Id, u.Name)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(u User)</span> <span class="title">Print3</span><span class="params">(prefix <span class="keyword">string</span>)</span></span> &#123;</span><br><span class="line">	fmt.Printf(<span class="string">"Print3 %s user id:%d, name:%s\n"</span>, prefix, u.Id, u.Name)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(u *User)</span> <span class="title">Print4</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Printf(<span class="string">"Print4 user id:%d, name:%s\n"</span>, u.Id, u.Name)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 通过反射调用方法</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestCallMethod1</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	u := User&#123;Id: <span class="number">1</span>, Name: <span class="string">"tom"</span>&#125;</span><br><span class="line">	_type := reflect.ValueOf(u)</span><br><span class="line"></span><br><span class="line">	p1 := _type.MethodByName(<span class="string">"Print1"</span>)</span><br><span class="line">	<span class="keyword">if</span> p1.IsValid() &#123;</span><br><span class="line">		p1.Call(<span class="literal">nil</span>) <span class="comment">// Print1 user id:1, name:tom</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	p2 := _type.MethodByName(<span class="string">"print2"</span>)</span><br><span class="line">	fmt.Println(<span class="string">"print2"</span>, p2.IsValid()) <span class="comment">// print2 false</span></span><br><span class="line"></span><br><span class="line">	p3 := _type.MethodByName(<span class="string">"Print3"</span>)</span><br><span class="line">	<span class="keyword">if</span> p3.IsValid() &#123;</span><br><span class="line">		args := []reflect.Value&#123;reflect.ValueOf(<span class="string">"hello"</span>)&#125;</span><br><span class="line">		p3.Call(args) <span class="comment">// Print3 hello user id:1, name:tom</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestCallMethod2</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	u := User&#123;Id: <span class="number">1</span>, Name: <span class="string">"tom"</span>&#125;</span><br><span class="line"></span><br><span class="line">	v1 := reflect.ValueOf(u)</span><br><span class="line">	p11 := v1.MethodByName(<span class="string">"Print1"</span>)</span><br><span class="line">	p14 := v1.MethodByName(<span class="string">"Print4"</span>)</span><br><span class="line">	fmt.Println(p11.IsValid(), p14.IsValid()) <span class="comment">// true false</span></span><br><span class="line"></span><br><span class="line">	v2 := reflect.ValueOf(&amp;u)</span><br><span class="line">	p21 := v2.MethodByName(<span class="string">"Print1"</span>)</span><br><span class="line">	p24 := v2.MethodByName(<span class="string">"Print4"</span>)</span><br><span class="line">	fmt.Println(p21.IsValid(), p24.IsValid()) <span class="comment">// true true</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h5 id="2-5-反射修改值"><a href="#2-5-反射修改值" class="headerlink" title="2.5 反射修改值"></a>2.5 反射修改值</h5><p>修改值需要传递指针:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 反射修改值</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestModifyValue</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	num := <span class="number">1</span></span><br><span class="line">	v1 := reflect.ValueOf(&amp;num)</span><br><span class="line">	v1.Elem().SetInt(<span class="number">100</span>)</span><br><span class="line">	fmt.Println(<span class="string">"num:"</span>, num) <span class="comment">// num: 100</span></span><br><span class="line"></span><br><span class="line">	u := User&#123;Id: <span class="number">1</span>, Name: <span class="string">"tom"</span>&#125;</span><br><span class="line">	modify(&amp;u)</span><br><span class="line">	fmt.Println(<span class="string">"user:"</span>, u) <span class="comment">// user: &#123;1 jerry&#125;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">modify</span><span class="params">(u *User)</span></span> &#123;</span><br><span class="line">	v := reflect.ValueOf(u)</span><br><span class="line">	<span class="keyword">if</span> v.Kind() != reflect.Ptr &#123;</span><br><span class="line">		fmt.Println(<span class="string">"err: is not a pointer"</span>)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> !v.Elem().CanSet() &#123;</span><br><span class="line">		fmt.Println(<span class="string">"err: element can not set"</span>)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	v = v.Elem()</span><br><span class="line">	f := v.FieldByName(<span class="string">"Name"</span>)</span><br><span class="line">	<span class="keyword">if</span> !f.IsValid() &#123;</span><br><span class="line">		fmt.Println(<span class="string">"err: filed name is not valid"</span>)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> f.Kind() != reflect.String &#123;</span><br><span class="line">		fmt.Println(<span class="string">"err: field name is not string"</span>)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	f.SetString(<span class="string">"jerry"</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h5 id="2-6-嵌套结构反射"><a href="#2-6-嵌套结构反射" class="headerlink" title="2.6 嵌套结构反射"></a>2.6 嵌套结构反射</h5><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 嵌套结构反射</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestNestReflect</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	<span class="keyword">type</span> user <span class="keyword">struct</span> &#123;</span><br><span class="line">		Id   <span class="keyword">int</span></span><br><span class="line">		Name <span class="keyword">string</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">type</span> manger <span class="keyword">struct</span> &#123;</span><br><span class="line">		user</span><br><span class="line">		title <span class="keyword">string</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	m := manger&#123;</span><br><span class="line">		user: user&#123;</span><br><span class="line">			Id:   <span class="number">1</span>,</span><br><span class="line">			Name: <span class="string">"Tom"</span>,</span><br><span class="line">		&#125;,</span><br><span class="line">		title: <span class="string">"boss"</span>,</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	_type := reflect.TypeOf(m)</span><br><span class="line">	userField, has := _type.FieldByName(<span class="string">"user"</span>)</span><br><span class="line">	fmt.Println(<span class="string">"user field:"</span>, userField, <span class="string">", has:"</span>, has)</span><br><span class="line"></span><br><span class="line">	nameField := _type.FieldByIndex([]<span class="keyword">int</span>&#123;<span class="number">0</span>, <span class="number">0</span>&#125;)</span><br><span class="line">	fmt.Println(<span class="string">"name field:"</span>, nameField)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// output:</span></span><br><span class="line"><span class="comment">// user field: &#123;user go-app/ch13_reflect ch13_reflect.user  0 [0] true&#125; , has: true</span></span><br><span class="line"><span class="comment">// name field: &#123;Id  int  0 [0] false&#125;</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h5 id="2-7-通过反射获取tag"><a href="#2-7-通过反射获取tag" class="headerlink" title="2.7 通过反射获取tag"></a>2.7 通过反射获取tag</h5><p>反射可以获取私有成员变量tag:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 反射获取struct tag</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestGetTag</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	<span class="keyword">type</span> user <span class="keyword">struct</span> &#123;</span><br><span class="line">		Id   <span class="keyword">int</span>    <span class="string">`json:"id"`</span></span><br><span class="line">		Name <span class="keyword">string</span> <span class="string">`json:"name"`</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	u := user&#123;Id: <span class="number">1</span>, Name: <span class="string">"tom"</span>&#125;</span><br><span class="line">	_type := reflect.TypeOf(u)</span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; _type.NumField(); i++ &#123;</span><br><span class="line">		sf := _type.Field(i)</span><br><span class="line">		tag := sf.Tag</span><br><span class="line">		fmt.Println(<span class="string">"tag:"</span>, tag)</span><br><span class="line">		fmt.Println(tag.Get(<span class="string">"json"</span>))</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// output:</span></span><br><span class="line"><span class="comment">// tag: json:"id"</span></span><br><span class="line"><span class="comment">// id</span></span><br><span class="line"><span class="comment">// tag: json:"name"</span></span><br><span class="line"><span class="comment">// name</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h5 id="2-8-判断类型是否实现某接口"><a href="#2-8-判断类型是否实现某接口" class="headerlink" title="2.8 判断类型是否实现某接口"></a>2.8 判断类型是否实现某接口</h5><p>借助 <code>reflect.rtypes.Implements()</code> 方法可以判断某些类型是否实现了某个接口。而获取接口的 <code>Type</code> 类型方式为：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">reflect.TypeOf((*&lt;<span class="keyword">interface</span>&gt;)(<span class="literal">nil</span>)).Elem()</span><br></pre></td></tr></table></figure>
+
+<p>示例：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 校验类型是否实现了接口</span></span><br><span class="line"><span class="keyword">type</span> MyError <span class="keyword">struct</span>&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(*MyError)</span> <span class="title">Error</span><span class="params">()</span> <span class="title">string</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="string">""</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestCheckImplements</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	errType := reflect.TypeOf((*error)(<span class="literal">nil</span>)).Elem()</span><br><span class="line">	myErrType := reflect.TypeOf(MyError&#123;&#125;)</span><br><span class="line">	myErrPtrType := reflect.TypeOf(&amp;MyError&#123;&#125;)</span><br><span class="line"></span><br><span class="line">	fmt.Println(myErrType.Implements(errType))    <span class="comment">// false</span></span><br><span class="line">	fmt.Println(myErrPtrType.Implements(errType)) <span class="comment">// true</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="3-反射总结"><a href="#3-反射总结" class="headerlink" title="3. 反射总结"></a>3. 反射总结</h4><h5 id="3-1-反射函数和类型"><a href="#3-1-反射函数和类型" class="headerlink" title="3.1 反射函数和类型"></a>3.1 反射函数和类型</h5><p>go 语言中主要通过 <code>reflec</code> 包提供运行时的反射能力。而反射主要通过 2 个函数来实现：<code>reflect.TypeOf</code>、<code>reflect.ValueOf</code>，其中前者能获取数据的类型信息，后者能获取数据的值信息。</p>
+<p>其中 <code>reflect.TypeOf</code> 函数接收一个 <code>interface</code> 类型参数返回一个 <code>Type</code> 类型。而这里的 <code>Type</code> 其实是一个接口，其包含了获取当前类型名、当前类型的方法的引用、当前类型的方法数量等方法：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Type <span class="keyword">interface</span> &#123;</span><br><span class="line">	Align() <span class="keyword">int</span></span><br><span class="line">	FieldAlign() <span class="keyword">int</span></span><br><span class="line">	Method(<span class="keyword">int</span>) Method</span><br><span class="line">	MethodByName(<span class="keyword">string</span>) (Method, <span class="keyword">bool</span>)</span><br><span class="line">	NumMethod() <span class="keyword">int</span></span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>reflect.ValueOf</code> 函数接收一个 <code>interface</code> 类型参数返回一个 <code>Value</code> 类型值。这里 <code>Value</code> 是一个结构体，包含值的类型信息字段、指向真实数据的指针和一个标识字段，其实现的方法包括设值、获取值等。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Value <span class="keyword">struct</span> &#123;</span><br><span class="line">	typ *rtype</span><br><span class="line">	ptr unsafe.Pointer</span><br><span class="line">	flag</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(v Value)</span> <span class="title">Addr</span><span class="params">()</span> <span class="title">Value</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(v Value)</span> <span class="title">Bool</span><span class="params">()</span> <span class="title">bool</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(v Value)</span> <span class="title">Bytes</span><span class="params">()</span> []<span class="title">byte</span></span></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+
+
+<h5 id="3-2-三大法则"><a href="#3-2-三大法则" class="headerlink" title="3.2 三大法则"></a>3.2 三大法则</h5><p>go 的反射包括三个法则：</p>
+<ul>
+<li>go 反射可以将 interface 值转换为反射对象</li>
+<li>go 反射可以从反射对象获取 interface 值</li>
+<li>要想修改一个反射对象，其值必须可被设置</li>
+</ul>
+<p><strong>1.将 inerface 值转换为反射对象：</strong></p>
+<p>通过 <code>reflect.TypeOf</code>、<code>reflect.ValueOf</code> 可以将 interface 值转换为反射对象，如果参数值本身为非 interface 类型，go 将自动将入参转换为 interface 类型再经过函数转换为对应的反射对象。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// interface -&gt; reflection object</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestReflectLaw1</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	str := <span class="string">"hello"</span></span><br><span class="line">	fmt.Println(<span class="string">"TypeOf str:"</span>, reflect.TypeOf(str))   <span class="comment">// TypeOf str: string</span></span><br><span class="line">	fmt.Println(<span class="string">"ValueOf str:"</span>, reflect.ValueOf(str)) <span class="comment">// ValueOf str: hello</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>2.从反射对象获取 interface 值：</strong></p>
+<p>通过 <code>reflect.Value</code> 的 <code>Interface()</code> 方法，可以从反射对象获取 interface 值，再经过类型转换就可得到初始值。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// reflection object -&gt; interface</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestReflectLaw2</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	str := <span class="string">"hello"</span></span><br><span class="line">	v := reflect.ValueOf(str)</span><br><span class="line">	val := v.Interface().(<span class="keyword">string</span>)</span><br><span class="line">	fmt.Println(<span class="string">"val:"</span>, val) <span class="comment">// val: hello</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>3.要想修改一个反射对象，其值必须可被设置：</strong></p>
+<p>要修改一个反射对象，必须先判断它的值是否可以被设置，否则将会出现 panic 错误。通过下面示例可以看到反射对象如需修改必须为指针类型且可以被设置，其中 <code>Elem()</code> 方法为获取指针指向的值。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// reflection object modify</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestReflectLaw3</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	str1 := <span class="string">"hello"</span></span><br><span class="line">	v1 := reflect.ValueOf(&amp;str1)</span><br><span class="line">	<span class="keyword">if</span> v1.Kind() == reflect.Ptr &amp;&amp; v1.Elem().CanSet() &#123;</span><br><span class="line">		v1.Elem().SetString(<span class="string">"ok"</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Println(str1) <span class="comment">// ok</span></span><br><span class="line"></span><br><span class="line">	str2 := <span class="string">"world"</span></span><br><span class="line">	v2 := reflect.ValueOf(str2)</span><br><span class="line">	fmt.Println(v2.Kind() == reflect.Ptr) <span class="comment">// false</span></span><br><span class="line">	fmt.Println(v2.CanSet())              <span class="comment">// false</span></span><br><span class="line">	<span class="comment">// v2.SetString("ok")                 // panic: reflect: reflect.flag.mustBeAssignable using unaddressable value [recovered]</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>以上所有示例可在 <a href="https://github.com/wcig/go-study-example/blob/master/ch13_reflect/reflect_test.go" target="_blank" rel="noopener">github</a>  查看</p>
+<p>参考:</p>
+<ul>
+<li><p><a href="https://draveness.me/golang/docs/part2-foundation/ch04-basic/golang-reflect/" target="_blank" rel="noopener">go语言反射的基本原理</a></p>
+</li>
+<li><p><a href="https://blog.golang.org/laws-of-reflection" target="_blank" rel="noopener">The Laws Of Reflection</a></p>
+</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Golang/" rel="tag"># Golang</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/09/19/golang/11.Go%20interface/" rel="next" title="Go interface">
+                <i class="fa fa-chevron-left"></i> Go interface
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="Wcig" />
+            
+              <p class="site-author-name" itemprop="name">Wcig</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">37</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/wcig" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-反射特性"><span class="nav-text">1. 反射特性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-反射使用"><span class="nav-text">2. 反射使用</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#2-1-TypeOf-ValueOf"><span class="nav-text">2.1 TypeOf, ValueOf</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-2-反射获取成员变量"><span class="nav-text">2.2 反射获取成员变量</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-3-反射获取方法"><span class="nav-text">2.3 反射获取方法</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-4-反射调用方法"><span class="nav-text">2.4 反射调用方法</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-5-反射修改值"><span class="nav-text">2.5 反射修改值</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-6-嵌套结构反射"><span class="nav-text">2.6 嵌套结构反射</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-7-通过反射获取tag"><span class="nav-text">2.7 通过反射获取tag</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-8-判断类型是否实现某接口"><span class="nav-text">2.8 判断类型是否实现某接口</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-反射总结"><span class="nav-text">3. 反射总结</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#3-1-反射函数和类型"><span class="nav-text">3.1 反射函数和类型</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-2-三大法则"><span class="nav-text">3.2 三大法则</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Wcig</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
