@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Golang," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="1. 单元测试go 语言通过 testing 包可以实现自动化的测试。一般规则就是：  单元测试文件需以 _test.go 后缀结尾 文件的函数格式应形如：func TestXxx(*testing.T) 测试文件跟要测试的代码文件在同一个目录下 使用 go test 命令即可运行测试样例  示例： 123456789101112131415161718192021222324&#x2F;&#x2F; testing">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Go单元测试">
+<meta property="og:url" content="https://wcig.github.io/2020/09/27/golang/14.Go%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95/index.html">
+<meta property="og:site_name" content="Wcig&#39;s Blog">
+<meta property="og:description" content="1. 单元测试go 语言通过 testing 包可以实现自动化的测试。一般规则就是：  单元测试文件需以 _test.go 后缀结尾 文件的函数格式应形如：func TestXxx(*testing.T) 测试文件跟要测试的代码文件在同一个目录下 使用 go test 命令即可运行测试样例  示例： 123456789101112131415161718192021222324&#x2F;&#x2F; testing">
+<meta property="article:published_time" content="2020-09-27T14:45:00.000Z">
+<meta property="article:modified_time" content="2020-10-03T06:15:03.577Z">
+<meta property="article:author" content="Wcig">
+<meta property="article:tag" content="Golang">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://wcig.github.io/2020/09/27/golang/14.Go单元测试/"/>
+
+
+
+
+
+  <title>Go单元测试 | Wcig's Blog</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Wcig's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://wcig.github.io/2020/09/27/golang/14.Go%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Wcig">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wcig's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Go单元测试</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-09-27T22:45:00+08:00">
+                2020-09-27
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Golang/" itemprop="url" rel="index">
+                    <span itemprop="name">Golang</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h4 id="1-单元测试"><a href="#1-单元测试" class="headerlink" title="1. 单元测试"></a>1. 单元测试</h4><p>go 语言通过 <code>testing</code> 包可以实现自动化的测试。一般规则就是：</p>
+<ul>
+<li>单元测试文件需以 _test.go 后缀结尾</li>
+<li>文件的函数格式应形如：func TestXxx(*testing.T)</li>
+<li>测试文件跟要测试的代码文件在同一个目录下</li>
+<li>使用 go test 命令即可运行测试样例</li>
+</ul>
+<p><strong>示例：</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// testing_test.go</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Abs</span><span class="params">(n <span class="keyword">int</span>)</span> <span class="title">int</span></span> &#123;</span><br><span class="line">	<span class="keyword">if</span> n &lt; <span class="number">0</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> -n</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> n</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestAbs</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	got := Abs(<span class="number">-1</span>)</span><br><span class="line">	<span class="keyword">if</span> got != <span class="number">1</span> &#123;</span><br><span class="line">		t.Errorf(<span class="string">"Abs(-1) = %d; want 1"</span>, got)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 运行结果</span></span><br><span class="line">➜  ch15_test git:(master) ✗ <span class="keyword">go</span> test   </span><br><span class="line">PASS</span><br><span class="line">ok      <span class="keyword">go</span>-app/ch15_test        <span class="number">0.005</span>s</span><br><span class="line"></span><br><span class="line">➜  ch15_test git:(master) ✗ <span class="keyword">go</span> test -v</span><br><span class="line">=== RUN   TestAbs</span><br><span class="line">--- PASS: TestAbs (<span class="number">0.00</span>s)</span><br><span class="line">PASS</span><br><span class="line">ok      <span class="keyword">go</span>-app/ch15_test        <span class="number">0.005</span>s</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="2-表组测试"><a href="#2-表组测试" class="headerlink" title="2. 表组测试"></a>2. 表组测试</h4><p>之前的测试都是一个输入输出的校验，通过表组测试方法，可以校验一组输入和输出的结果。</p>
+<p><strong>示例：</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 表组测试</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestTableDriven</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	dataList := []<span class="keyword">struct</span> &#123;</span><br><span class="line">		Input  <span class="keyword">int</span></span><br><span class="line">		Except <span class="keyword">int</span></span><br><span class="line">	&#125;&#123;</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="number">-1</span>,</span><br><span class="line">			<span class="number">1</span>,</span><br><span class="line">		&#125;,</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="number">1</span>,</span><br><span class="line">			<span class="number">1</span>,</span><br><span class="line">		&#125;,</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="number">0</span>,</span><br><span class="line">			<span class="number">0</span>,</span><br><span class="line">		&#125;,</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> _, data := <span class="keyword">range</span> dataList &#123;</span><br><span class="line">		result := Abs(data.Input)</span><br><span class="line">		<span class="keyword">if</span> result != data.Except &#123;</span><br><span class="line">			t.Errorf(<span class="string">"Abs(%d) = %d; want %d"</span>, data.Input, result, data.Except)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="3-基准测试"><a href="#3-基准测试" class="headerlink" title="3. 基准测试"></a>3. 基准测试</h4><p>go 中可以方便的进行基准测试，只需要将函数定义格式为：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">BenchmarkXxx</span><span class="params">(*testing.B)</span></span></span><br></pre></td></tr></table></figure>
+
+<p><strong>示例：</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 基准测试</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">BenchmarkRandInt</span><span class="params">(b *testing.B)</span></span> &#123;</span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; b.N; i++ &#123;</span><br><span class="line">		rand.Int()</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">BenchmarkRandInt2</span><span class="params">(b *testing.B)</span></span> &#123;</span><br><span class="line">	<span class="comment">// long time program execute...</span></span><br><span class="line">	b.ResetTimer()</span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; b.N; i++ &#123;</span><br><span class="line">		rand.Int()</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 运行结果：</span></span><br><span class="line">➜  ch15_test git:(master) ✗ <span class="keyword">go</span> test -test.v -test.bench=. -test.run=BenchmarkRandInt</span><br><span class="line">goos: darwin</span><br><span class="line">goarch: amd64</span><br><span class="line">pkg: <span class="keyword">go</span>-app/ch15_test</span><br><span class="line">BenchmarkRandInt<span class="number">-8</span>      <span class="number">64115544</span>                <span class="number">16.0</span> ns/op</span><br><span class="line">BenchmarkRandInt2<span class="number">-8</span>     <span class="number">75757910</span>                <span class="number">16.3</span> ns/op</span><br><span class="line">PASS</span><br><span class="line">ok      <span class="keyword">go</span>-app/ch15_test        <span class="number">2.306</span>s</span><br></pre></td></tr></table></figure>
+
+
+
+<p>3个计时方法：</p>
+<ul>
+<li><p><code>b.StartTimer</code>：开始计时测试。在基准测试开始之前会自动调用此函数，但也可以用于在调用StopTimer之后恢复计时。</p>
+</li>
+<li><p><code>b.StopTimer</code>：停止计时测试。这可用于在执行您不想测量的复杂初始化时暂停计时器。</p>
+</li>
+<li><p><code>b.ResetTimer</code>：将经过的基准时间和内存分配计数器归零，并删除用户报告的指标。它不影响计时器是否正在运行。</p>
+</li>
+</ul>
+<h4 id="4-校验结果"><a href="#4-校验结果" class="headerlink" title="4. 校验结果"></a>4. 校验结果</h4><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Examples: 结果校验</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">ExampleHello</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Println(<span class="string">"hello"</span>)</span><br><span class="line">	<span class="comment">// Output: hello</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">ExampleSalutations</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Println(<span class="string">"hello, and"</span>)</span><br><span class="line">	fmt.Println(<span class="string">"goodbye"</span>)</span><br><span class="line">	<span class="comment">// Output:</span></span><br><span class="line">	<span class="comment">// hello, and</span></span><br><span class="line">	<span class="comment">// goodbye</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>结果校验可以上面方式, 也可以使用类似于java格式的第三方包: <code>&quot;github.com/stretchr/testify/assert&quot;</code></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// assert: "github.com/stretchr/testify/assert"</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestHello</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	val := <span class="string">"hello"</span></span><br><span class="line">	except := <span class="string">"hello"</span></span><br><span class="line">	assert.True(t, val == except)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="5-跳过测试"><a href="#5-跳过测试" class="headerlink" title="5. 跳过测试"></a>5. 跳过测试</h4><p>有时候测试样例中有一些耗时比较长的任务, 我们需要根据条件去测试和取消测试这部分代码, go 提供了 <code>Skip()</code> 方法:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Skipping: 跳过测试</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestTimeConsuming</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	<span class="keyword">if</span> testing.Short() &#123;</span><br><span class="line">		t.Skip(<span class="string">"skipping test in short mode."</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Println(<span class="string">"长时间测试任务..."</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">➜  ch15_test git:(master) ✗ <span class="keyword">go</span> test -test.v -test.run=TestTimeConsuming</span><br><span class="line">=== RUN   TestTimeConsuming</span><br><span class="line">长时间测试任务...</span><br><span class="line">--- PASS: TestTimeConsuming (<span class="number">0.00</span>s)</span><br><span class="line">PASS</span><br><span class="line">ok      <span class="keyword">go</span>-app/ch15_test        <span class="number">0.002</span>s</span><br><span class="line"></span><br><span class="line"><span class="comment">// 下面true flag可以省略</span></span><br><span class="line">➜  ch15_test git:(master) ✗ <span class="keyword">go</span> test -test.v -test.run=TestTimeConsuming -test.short=<span class="literal">true</span></span><br><span class="line">=== RUN   TestTimeConsuming</span><br><span class="line">--- SKIP: TestTimeConsuming (<span class="number">0.00</span>s)</span><br><span class="line">    testing_test.<span class="keyword">go</span>:<span class="number">87</span>: skipping test in short mode.</span><br><span class="line">PASS</span><br><span class="line">ok      <span class="keyword">go</span>-app/ch15_test        <span class="number">0.003</span>s</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="6-子测试"><a href="#6-子测试" class="headerlink" title="6. 子测试"></a>6. 子测试</h4><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 子测试</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestFoo</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	<span class="comment">// &lt;setup code&gt;</span></span><br><span class="line">	t.Run(<span class="string">"A=1"</span>, <span class="function"><span class="keyword">func</span><span class="params">(t *testing.T)</span></span> &#123; fmt.Println(<span class="string">"a1 test"</span>) &#125;)</span><br><span class="line">	t.Run(<span class="string">"A=2"</span>, <span class="function"><span class="keyword">func</span><span class="params">(t *testing.T)</span></span> &#123; fmt.Println(<span class="string">"a2 test"</span>) &#125;)</span><br><span class="line">	t.Run(<span class="string">"B=1"</span>, <span class="function"><span class="keyword">func</span><span class="params">(t *testing.T)</span></span> &#123; fmt.Println(<span class="string">"b1 test"</span>) &#125;)</span><br><span class="line">	<span class="comment">// &lt;tear-down code&gt;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">go</span> test -run <span class="string">''</span>      # Run all tests.</span><br><span class="line"><span class="keyword">go</span> test -run Foo     # Run top-level tests matching <span class="string">"Foo"</span>, such as <span class="string">"TestFooBar"</span>.</span><br><span class="line"><span class="keyword">go</span> test -run Foo/A=  # For top-level tests matching <span class="string">"Foo"</span>, run subtests matching <span class="string">"A="</span>.</span><br><span class="line"><span class="keyword">go</span> test -run /A=<span class="number">1</span>    # For all top-level tests, run subtests matching <span class="string">"A=1"</span>.</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="7-Main"><a href="#7-Main" class="headerlink" title="7. Main"></a>7. Main</h4><p>有时候需要在测试程序的运行前和运行后执行一些设置和拆卸的工作，例如变量的初始化和资源的释放，go 提供了这样一个函数来实现该功能：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestMain</span><span class="params">(m *testing.M)</span></span></span><br></pre></td></tr></table></figure>
+
+<p><strong>示例：</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Main</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestMain</span><span class="params">(m *testing.M)</span></span> &#123;</span><br><span class="line">	fmt.Println(<span class="string">"start..."</span>)</span><br><span class="line">	existCode := m.Run()</span><br><span class="line">	fmt.Println(<span class="string">"end..."</span>)</span><br><span class="line">	os.Exit(existCode)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">➜  ch15_test git:(master) ✗ <span class="keyword">go</span> test -test.v -test.run=TestAbs                           </span><br><span class="line">start...</span><br><span class="line">=== RUN   TestAbs</span><br><span class="line">--- PASS: TestAbs (<span class="number">0.00</span>s)</span><br><span class="line">PASS</span><br><span class="line">end...</span><br><span class="line">ok      <span class="keyword">go</span>-app/ch15_test        <span class="number">0.009</span>s</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="8-HTTP测试"><a href="#8-HTTP测试" class="headerlink" title="8. HTTP测试"></a>8. HTTP测试</h4><p>Mock方式：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Mock</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestMock</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	<span class="keyword">type</span> result <span class="keyword">struct</span> &#123;</span><br><span class="line">		Code <span class="keyword">int</span>         <span class="string">`json:"code"`</span></span><br><span class="line">		Data <span class="keyword">interface</span>&#123;&#125; <span class="string">`json:"data"`</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	fmt.Println(<span class="string">"mock test start."</span>)</span><br><span class="line">	server := mockServer()</span><br><span class="line">	<span class="keyword">defer</span> server.Close()</span><br><span class="line"></span><br><span class="line">	resp, err := http.Get(server.URL)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		t.Fatal(<span class="string">"mock test failed, request err:"</span>, err)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">defer</span> resp.Body.Close()</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> resp.StatusCode != http.StatusOK &#123;</span><br><span class="line">		t.Fatal(<span class="string">"mock test failed, check http response code err:"</span>, resp.StatusCode)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">var</span> mockResult result</span><br><span class="line">	bytes, err := ioutil.ReadAll(resp.Body)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		t.Fatal(<span class="string">"mock test failed, read response body err:"</span>, err)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> err := json.Unmarshal(bytes, &amp;mockResult); err != <span class="literal">nil</span> &#123;</span><br><span class="line">		t.Fatal(<span class="string">"mock test failed, convert response body to result struct err:"</span>, err)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> mockResult.Code != <span class="number">0</span> &#123;</span><br><span class="line">		t.Fatal(<span class="string">"mock test failed, check result code err:"</span>, mockResult)</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Println(<span class="string">"mock test end."</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">mockServer</span><span class="params">()</span> *<span class="title">httptest</span>.<span class="title">Server</span></span> &#123;</span><br><span class="line">	f := <span class="function"><span class="keyword">func</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">		w.WriteHeader(http.StatusOK)</span><br><span class="line">		w.Header().Set(<span class="string">"Content-Type"</span>, <span class="string">"application/json"</span>)</span><br><span class="line">		fmt.Fprintln(w, <span class="string">`&#123;"code":0&#125;`</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> httptest.NewServer(http.HandlerFunc(f))</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">➜  ch15_test git:(master) ✗ <span class="keyword">go</span> test -test.v -test.run=TestMock </span><br><span class="line">=== RUN   TestMock</span><br><span class="line">mock test start.</span><br><span class="line">mock test end.</span><br><span class="line">--- PASS: TestMock (<span class="number">0.00</span>s)</span><br><span class="line">PASS</span><br><span class="line">ok      <span class="keyword">go</span>-app/ch15_test        <span class="number">0.010</span>s</span><br></pre></td></tr></table></figure>
+
+
+
+<p>模拟调用：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// handler.go</span></span><br><span class="line"><span class="keyword">package</span> ch15</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"encoding/json"</span></span><br><span class="line">	<span class="string">"net/http"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Routes</span><span class="params">()</span></span> &#123;</span><br><span class="line">	http.HandleFunc(<span class="string">"/sendjson"</span>, SendJSON)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">SendJSON</span><span class="params">(rw http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">	u := <span class="keyword">struct</span> &#123;</span><br><span class="line">		Name  <span class="keyword">string</span></span><br><span class="line">		Email <span class="keyword">string</span></span><br><span class="line">	&#125;&#123;</span><br><span class="line">		Name:  <span class="string">"Tom"</span>,</span><br><span class="line">		Email: <span class="string">"tom@gmail.com"</span>,</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	rw.Header().Set(<span class="string">"Content-Type"</span>, <span class="string">"application/json"</span>)</span><br><span class="line">	rw.WriteHeader(http.StatusOK)</span><br><span class="line">	json.NewEncoder(rw).Encode(u)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// handler_test.go</span></span><br><span class="line"><span class="keyword">package</span> ch15</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"net/http"</span></span><br><span class="line">	<span class="string">"net/http/httptest"</span></span><br><span class="line">	<span class="string">"testing"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">init</span><span class="params">()</span></span> &#123;</span><br><span class="line">	Routes()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestSendJSON</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	req, err := http.NewRequest(http.MethodGet, <span class="string">"/sendjson"</span>, <span class="literal">nil</span>)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		t.Fatal(<span class="string">"create request failed, err"</span>, err)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	rw := httptest.NewRecorder()</span><br><span class="line">	http.DefaultServeMux.ServeHTTP(rw, req)</span><br><span class="line"></span><br><span class="line">	t.Log(<span class="string">"code:"</span>, rw.Code)</span><br><span class="line">	t.Log(<span class="string">"body:"</span>, rw.Body.String())</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">➜  ch15_test git:(master) ✗ <span class="keyword">go</span> test -test.v handler_test.<span class="keyword">go</span> handler.<span class="keyword">go</span> </span><br><span class="line">=== RUN   TestSendJSON</span><br><span class="line">--- PASS: TestSendJSON (<span class="number">0.00</span>s)</span><br><span class="line">    handler_test.<span class="keyword">go</span>:<span class="number">22</span>: code: <span class="number">200</span></span><br><span class="line">    handler_test.<span class="keyword">go</span>:<span class="number">23</span>: body: &#123;<span class="string">"Name"</span>:<span class="string">"Tom"</span>,<span class="string">"Email"</span>:<span class="string">"tom@gmail.com"</span>&#125;</span><br><span class="line">        </span><br><span class="line">PASS</span><br><span class="line">ok      command-line-arguments  <span class="number">0.009</span>s</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="9-日志输出"><a href="#9-日志输出" class="headerlink" title="9. 日志输出"></a>9. 日志输出</h4><p><code>testing.T</code> 类型提供了一些日志输出的工具方法，在介绍工具方法之前介绍3个方法：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Fail</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestFail</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	<span class="keyword">defer</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		fmt.Println(t.Failed())</span><br><span class="line">	&#125;()</span><br><span class="line"></span><br><span class="line">	fmt.Println(<span class="string">"before..."</span>)</span><br><span class="line">	<span class="keyword">if</span> testing.Short() &#123;</span><br><span class="line">		t.Fail()</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Println(<span class="string">"after..."</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">➜  ch15_test git:(master) ✗ <span class="keyword">go</span> test -test.v -test.run=^TestFail$ </span><br><span class="line">=== RUN   TestFail</span><br><span class="line">before...</span><br><span class="line">after...</span><br><span class="line"><span class="literal">false</span></span><br><span class="line">--- PASS: TestFail (<span class="number">0.00</span>s)</span><br><span class="line">PASS</span><br><span class="line">ok      <span class="keyword">go</span>-app/ch15_test        <span class="number">0.009</span>s</span><br><span class="line"></span><br><span class="line">➜  ch15_test git:(master) ✗ <span class="keyword">go</span> test -test.v -test.run=^TestFail$ -test.short=<span class="literal">true</span></span><br><span class="line">=== RUN   TestFail</span><br><span class="line">before...</span><br><span class="line">after...</span><br><span class="line"><span class="literal">true</span></span><br><span class="line">--- FAIL: TestFail (<span class="number">0.00</span>s)</span><br><span class="line">FAIL</span><br><span class="line">exit status <span class="number">1</span></span><br><span class="line">FAIL    <span class="keyword">go</span>-app/ch15_test        <span class="number">0.009</span>s</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// FailNow</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestFailNow</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	<span class="keyword">defer</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		fmt.Println(t.Failed())</span><br><span class="line">	&#125;()</span><br><span class="line"></span><br><span class="line">	fmt.Println(<span class="string">"before..."</span>)</span><br><span class="line">	t.FailNow()</span><br><span class="line">	fmt.Println(<span class="string">"after..."</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">➜  ch15_test git:(master) ✗ <span class="keyword">go</span> test -test.v -test.run=^TestFailNow$              </span><br><span class="line">=== RUN   TestFailNow</span><br><span class="line">before...</span><br><span class="line"><span class="literal">true</span></span><br><span class="line">--- FAIL: TestFailNow (<span class="number">0.00</span>s)</span><br><span class="line">FAIL</span><br><span class="line">exit status <span class="number">1</span></span><br><span class="line">FAIL    <span class="keyword">go</span>-app/ch15_test        <span class="number">0.009</span>s</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Skip</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestSkip</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	<span class="keyword">defer</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		fmt.Println(t.Skipped())</span><br><span class="line">	&#125;()</span><br><span class="line"></span><br><span class="line">	fmt.Println(<span class="string">"before..."</span>)</span><br><span class="line">	<span class="keyword">if</span> testing.Short() &#123;</span><br><span class="line">		t.SkipNow()</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Println(<span class="string">"after..."</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">➜  ch15_test git:(master) ✗ <span class="keyword">go</span> test -test.v -test.run=^TestSkip$                 </span><br><span class="line">=== RUN   TestSkip</span><br><span class="line">before...</span><br><span class="line">after...</span><br><span class="line"><span class="literal">false</span></span><br><span class="line">--- PASS: TestSkip (<span class="number">0.00</span>s)</span><br><span class="line">PASS</span><br><span class="line">ok      <span class="keyword">go</span>-app/ch15_test        <span class="number">0.009</span>s</span><br><span class="line"></span><br><span class="line">➜  ch15_test git:(master) ✗ <span class="keyword">go</span> test -test.v -test.run=^TestSkip$ -test.short=<span class="literal">true</span></span><br><span class="line">=== RUN   TestSkip</span><br><span class="line">before...</span><br><span class="line"><span class="literal">true</span></span><br><span class="line">--- SKIP: TestSkip (<span class="number">0.00</span>s)</span><br><span class="line">PASS</span><br><span class="line">ok      <span class="keyword">go</span>-app/ch15_test        <span class="number">0.009</span>s</span><br></pre></td></tr></table></figure>
+
+
+
+<p>通过上面示例我们可以得出以下结论：</p>
+<ul>
+<li><code>t.Fail()</code>：将测试程序标记为失败并继续执行后面的代码</li>
+<li><code>t.FailNow()</code>：将测试程序标记为失败并结束</li>
+<li><code>t.Failed()</code>：反馈测试程序是否失败</li>
+<li><code>t.SkipNow()</code>：跳过后面代码结束程序</li>
+<li><code>t.Skipped()</code>：反馈程序是否跳过</li>
+</ul>
+<p><strong>日志输出示例：</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Log</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestLog</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	<span class="keyword">if</span> testing.Short() &#123;</span><br><span class="line">		t.Skip(<span class="string">"testing skip"</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	t.Log(<span class="string">"testing log"</span>)</span><br><span class="line">	t.Error(<span class="string">"testing error"</span>)</span><br><span class="line">	t.Fatal(<span class="string">"testing fatal"</span>)</span><br><span class="line">	fmt.Println(<span class="string">"over..."</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">➜  ch15_test git:(master) ✗ <span class="keyword">go</span> test -test.v -test.run=^TestLog$                  </span><br><span class="line">=== RUN   TestLog</span><br><span class="line">--- FAIL: TestLog (<span class="number">0.00</span>s)</span><br><span class="line">    testing_test.<span class="keyword">go</span>:<span class="number">114</span>: testing log</span><br><span class="line">    testing_test.<span class="keyword">go</span>:<span class="number">115</span>: testing error</span><br><span class="line">    testing_test.<span class="keyword">go</span>:<span class="number">116</span>: testing fatal</span><br><span class="line">FAIL</span><br><span class="line">exit status <span class="number">1</span></span><br><span class="line">FAIL    <span class="keyword">go</span>-app/ch15_test        <span class="number">0.008</span>s</span><br></pre></td></tr></table></figure>
+
+<p>通过以上示例可以得出日志输出方法为：</p>
+<ul>
+<li><code>t.Log()</code>：正常输出日志，只有在测试失败和 -test.v 设置时打印。</li>
+<li><code>t.Error()</code>：等价于 t.Log() + t.Fail()。</li>
+<li><code>t.Fatal()</code>：等价于 t.Log() + t.FailNow()。</li>
+<li><code>t.Skip()</code>：等价于 t.Log() + t.SkipNow()。</li>
+</ul>
+<p><code>testing.T</code> 其他方法：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *T)</span> <span class="title">Cleanup</span><span class="params">(f <span class="keyword">func</span>()</span>)</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(t *T)</span> <span class="title">Deadline</span><span class="params">()</span> <span class="params">(deadline time.Time, ok <span class="keyword">bool</span>)</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *T)</span> <span class="title">Helper</span><span class="params">()</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *T)</span> <span class="title">Name</span><span class="params">()</span> <span class="title">string</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(t *T)</span> <span class="title">Parallel</span><span class="params">()</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(t *T)</span> <span class="title">Run</span><span class="params">(name <span class="keyword">string</span>, f <span class="keyword">func</span>(t *T)</span>) <span class="title">bool</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *T)</span> <span class="title">TempDir</span><span class="params">()</span> <span class="title">string</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="10-go-test命令参数"><a href="#10-go-test命令参数" class="headerlink" title="10. go test命令参数"></a>10. go test命令参数</h4><p>通过 <code>go help test</code> 和 <code>go help testflag</code> 命令可以查看详细的命令参数，这里列出一些常用的参数：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">-bench regexp: 根据正则匹配执行对应基准测试，'-bench=.'或'-bench .'执行所有基准测试</span><br><span class="line">-benchtime t: 设定运行基准测试时间</span><br><span class="line">-count n: 设定测试运行次数（默认值1），如果设置了-cpu则为每一个GOMAXPROCS值运行n次</span><br><span class="line">-cover: 测试覆盖率分析</span><br><span class="line">-cpu 1,2,4: 指定GOMAXPROCS列表来测试</span><br><span class="line">-failfast: 当第一个测试失败后不会执行新的测试</span><br><span class="line">-short: 跳过长时间测试程序</span><br><span class="line">-timeout d: 测试二进制文件运行超过d则panic错误，d=0时timeout不生效（默认值10分钟）</span><br><span class="line">-v: 打印详细信息</span><br></pre></td></tr></table></figure>
+
+<p><strong>示例：</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 运行所有测试：</span></span><br><span class="line">go test</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 运行指定测试函数并打印详细信息</span></span><br><span class="line">go test -test.v -test.run=&lt;测试函数名&gt;</span><br><span class="line"><span class="meta">#</span><span class="bash"> 如果函数名正则匹配多个可以添加限定条件</span></span><br><span class="line">go test -test.v -test.run=^&lt;测试函数名&gt;$</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 运行所有测试，并跳过长时间测试任务</span></span><br><span class="line">go test -test.short=true</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 运行所有基准测试</span></span><br><span class="line">go test -test.bench=.</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 运行指定基准测试，并输出详细信息</span></span><br><span class="line">go test -test.v -test.bench=. -test.run=&lt;测试函数名&gt;</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 运行指定时间基准测试</span></span><br><span class="line">go test -test.bench=. -test.benchtime=100s</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 运行多次基准测试</span></span><br><span class="line">go test -test.bench=. -test.count=3</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 运行指定文件</span></span><br><span class="line">go test -test.v handler_test.go handler.go</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 运行指定目录</span></span><br><span class="line">go test -test.v ./ch15_test</span><br></pre></td></tr></table></figure>
+
+
+
+<p>以上所有示例可在 <a href="https://github.com/wcig/go-study-example/tree/master/ch15_test" target="_blank" rel="noopener">github</a>  查看</p>
+<p>参考：</p>
+<ul>
+<li><p><a href="https://golang.org/pkg/testing/" target="_blank" rel="noopener">GO Package testing</a></p>
+</li>
+<li><p><a href="https://www.flysnow.org/2017/05/16/go-in-action-go-unit-test.html" target="_blank" rel="noopener">Go单元测试</a></p>
+</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Golang/" rel="tag"># Golang</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/09/19/golang/12.Go%E5%8F%8D%E5%B0%84/" rel="next" title="Go 反射">
+                <i class="fa fa-chevron-left"></i> Go 反射
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="Wcig" />
+            
+              <p class="site-author-name" itemprop="name">Wcig</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">38</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/wcig" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-单元测试"><span class="nav-text">1. 单元测试</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-表组测试"><span class="nav-text">2. 表组测试</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-基准测试"><span class="nav-text">3. 基准测试</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-校验结果"><span class="nav-text">4. 校验结果</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-跳过测试"><span class="nav-text">5. 跳过测试</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#6-子测试"><span class="nav-text">6. 子测试</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#7-Main"><span class="nav-text">7. Main</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#8-HTTP测试"><span class="nav-text">8. HTTP测试</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#9-日志输出"><span class="nav-text">9. 日志输出</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#10-go-test命令参数"><span class="nav-text">10. go test命令参数</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Wcig</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
