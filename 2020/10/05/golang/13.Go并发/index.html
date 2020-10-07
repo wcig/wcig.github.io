@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Golang," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="1. 并发与并行并发与并行是不同的两个概念： 并发：通一个物理处理器通过cpu的切换执行不同的程序，以达到程序看起来是并发执行的效果，其实际上还是在按顺序执行。 并行：根据服务器上物理处理器的个数，不同处理器执行不同的程序。 go 中可以通过 runtime.GOMAXPROCS() 设定程序需要使用的 CPU 个数，如果没有显式设定则默认为所有： 123456&#x2F;&#x2F; 设定CPU使用个数func T">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Go并发">
+<meta property="og:url" content="https://wcig.github.io/2020/10/05/golang/13.Go%E5%B9%B6%E5%8F%91/index.html">
+<meta property="og:site_name" content="Wcig&#39;s Blog">
+<meta property="og:description" content="1. 并发与并行并发与并行是不同的两个概念： 并发：通一个物理处理器通过cpu的切换执行不同的程序，以达到程序看起来是并发执行的效果，其实际上还是在按顺序执行。 并行：根据服务器上物理处理器的个数，不同处理器执行不同的程序。 go 中可以通过 runtime.GOMAXPROCS() 设定程序需要使用的 CPU 个数，如果没有显式设定则默认为所有： 123456&#x2F;&#x2F; 设定CPU使用个数func T">
+<meta property="article:published_time" content="2020-10-05T13:54:00.000Z">
+<meta property="article:modified_time" content="2020-10-07T12:55:23.023Z">
+<meta property="article:author" content="Wcig">
+<meta property="article:tag" content="Golang">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://wcig.github.io/2020/10/05/golang/13.Go并发/"/>
+
+
+
+
+
+  <title>Go并发 | Wcig's Blog</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Wcig's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://wcig.github.io/2020/10/05/golang/13.Go%E5%B9%B6%E5%8F%91/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Wcig">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wcig's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Go并发</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-10-05T21:54:00+08:00">
+                2020-10-05
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Golang/" itemprop="url" rel="index">
+                    <span itemprop="name">Golang</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="1-并发与并行"><a href="#1-并发与并行" class="headerlink" title="1. 并发与并行"></a>1. 并发与并行</h3><p>并发与并行是不同的两个概念：</p>
+<p>并发：通一个物理处理器通过cpu的切换执行不同的程序，以达到程序看起来是并发执行的效果，其实际上还是在按顺序执行。</p>
+<p>并行：根据服务器上物理处理器的个数，不同处理器执行不同的程序。</p>
+<p>go 中可以通过 <code>runtime.GOMAXPROCS()</code> 设定程序需要使用的 CPU 个数，如果没有显式设定则默认为所有：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 设定CPU使用个数</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestGOPROCES</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	num := runtime.NumCPU()</span><br><span class="line">	fmt.Println(<span class="string">"this computer cpu num:"</span>, num) <span class="comment">// 输出当前电脑的CPU个数</span></span><br><span class="line">	runtime.GOMAXPROCS(<span class="number">1</span>)                      <span class="comment">// 设定当前使用1个CPU</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="2-goroutine"><a href="#2-goroutine" class="headerlink" title="2. goroutine"></a>2. goroutine</h3><p>go 语言中不同于 Java 等其他语言都是在一个进程中通过启用多个线程来达到程序并发执行多线程的效果，go 提供了一种类似于线程的协程 <code>goroutine</code>，但其比线程使用更方便，使用的开销也更小。除非需要限定程序同时执行的个数等特殊情况，否则可以不用像其他语言需要借助线程池来使用线程，即需要使用协程直接创建一个即可。</p>
+<p>使用关键字 <code>go</code> 即可创建一个 <code>goroutine</code>：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 创建goroutine</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestCreateGoroutine</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	<span class="keyword">go</span> printChar(<span class="string">'a'</span>, <span class="string">'z'</span>)</span><br><span class="line">	<span class="keyword">go</span> printChar(<span class="string">'A'</span>, <span class="string">'Z'</span>)</span><br><span class="line">	time.Sleep(<span class="number">2</span> * time.Second)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">printChar</span><span class="params">(start <span class="keyword">byte</span>, end <span class="keyword">byte</span>)</span></span> &#123;</span><br><span class="line">	b := start</span><br><span class="line">	<span class="keyword">for</span> &#123;</span><br><span class="line">		fmt.Printf(<span class="string">"%c"</span>, b)</span><br><span class="line">		b++</span><br><span class="line">		<span class="keyword">if</span> b &gt; end &#123;</span><br><span class="line">			<span class="keyword">break</span></span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在上面代码中，一共启用了3个 <code>goroutine</code>，分别是主程序、打印a-z的程序和打印A-Z的程序。后面之所以要睡眠2秒是因为当主程序执行完就结束，不会等待启用的2个子程序。</p>
+<h3 id="3-sync-WaitGroup"><a href="#3-sync-WaitGroup" class="headerlink" title="3. sync.WaitGroup"></a>3. sync.WaitGroup</h3><p>在如上述示例的情况，主程序需要等待子程序处理完成再结束，此时可以使用 <code>sync.WaitGroup</code> 来实现：</p>
+<p><strong>示例：</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// sync.WaitGroup</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestWaitGroup</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> wg sync.WaitGroup</span><br><span class="line">	wg.Add(<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		<span class="keyword">defer</span> wg.Done()</span><br><span class="line">		printChar(<span class="string">'a'</span>, <span class="string">'z'</span>)</span><br><span class="line">	&#125;()</span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		<span class="keyword">defer</span> wg.Done()</span><br><span class="line">		printChar(<span class="string">'A'</span>, <span class="string">'Z'</span>)</span><br><span class="line">	&#125;()</span><br><span class="line"></span><br><span class="line">	wg.Wait()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><code>sync.WaitGroup</code> 提供了3个对外方法：</p>
+<ul>
+<li><code>Add()</code>：增加待处理任务数；</li>
+<li><code>Done()</code>：标识某一个任务已处理；</li>
+<li><code>Wait()</code>：阻塞直到所有待处理任务数为0，即全部处理完成。</li>
+</ul>
+<h3 id="4-sync-Mutex"><a href="#4-sync-Mutex" class="headerlink" title="4. sync.Mutex"></a>4. sync.Mutex</h3><p>go 提供了互斥锁 <code>sync.Mutex</code>，可用来保证多个 goroutine 的同步。</p>
+<p><strong>示例：</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 共享资源没有加锁</span></span><br><span class="line"><span class="keyword">type</span> unsafeCounter <span class="keyword">struct</span> &#123;</span><br><span class="line">	counter <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *unsafeCounter)</span> <span class="title">Incr</span><span class="params">(n <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">	c.counter += n</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *unsafeCounter)</span> <span class="title">Value</span><span class="params">()</span> <span class="title">int</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> c.counter</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestWithoutMutex</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	c := unsafeCounter&#123;counter: <span class="number">0</span>&#125;</span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">1000</span>; i++ &#123;</span><br><span class="line">		<span class="keyword">go</span> c.Incr(i)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	time.Sleep(<span class="number">3</span> * time.Second)</span><br><span class="line">	fmt.Println(<span class="string">"result value:"</span>, c.Value()) <span class="comment">// result value: 478684</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// sync.Mutex</span></span><br><span class="line"><span class="keyword">type</span> safeCounter <span class="keyword">struct</span> &#123;</span><br><span class="line">	counter <span class="keyword">int</span></span><br><span class="line">	mux     sync.Mutex</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *safeCounter)</span> <span class="title">Incr</span><span class="params">(n <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">	c.mux.Lock()</span><br><span class="line">	c.counter += n</span><br><span class="line">	c.mux.Unlock()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *safeCounter)</span> <span class="title">Value</span><span class="params">()</span> <span class="title">int</span></span> &#123;</span><br><span class="line">	c.mux.Lock()</span><br><span class="line">	<span class="keyword">defer</span> c.mux.Unlock()</span><br><span class="line">	<span class="keyword">return</span> c.counter</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestMutex</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	c := safeCounter&#123;counter: <span class="number">0</span>&#125;</span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">1000</span>; i++ &#123;</span><br><span class="line">		<span class="keyword">go</span> c.Incr(i)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	time.Sleep(<span class="number">3</span> * time.Second)</span><br><span class="line">	fmt.Println(<span class="string">"result value:"</span>, c.Value()) <span class="comment">// result value: 499500</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><code>sync.Mutex</code> 提供了2个方法：</p>
+<ul>
+<li><code>Lock()</code> ：加锁，如果已加锁，将阻塞直到锁被释放；</li>
+<li><code>Unlock()</code>：释放锁，如果在释放锁之前没有加锁将导致运行时错误。</li>
+</ul>
+<p>总结：</p>
+<ul>
+<li><code>sync.Mutex</code> 提供了互斥锁的功能，Lock() 加锁，UnLock() 释放锁，当一个 goroutine 拿到锁，其他 goroutine 只有等该 goroutine 释放锁才可获取。</li>
+<li>当已经 Lock() 加锁后，再继续加锁将报错，只有等到 Unlock() 释放锁才可再加锁；</li>
+<li>在未 Lock() 加锁的情况下去 Unlock() 释放锁将导致 panic 错误；</li>
+<li>已锁定的 Mutex 不与特定的 goroutine 关联，可以在一个 goroutine 加锁，再另一个 goroutine 释放锁；</li>
+<li><code>sync.Mutex</code> 适合读写不是特别确定或读少写多的情况。</li>
+</ul>
+<h3 id="5-sync-RWmutex"><a href="#5-sync-RWmutex" class="headerlink" title="5. sync.RWmutex"></a>5. sync.RWmutex</h3><p>读写锁 <code>sync.RWmutex</code> 是更细粒度的互斥锁，它不限制并发的读，但是读写、写写无法同时进行。其底层也是基于 <code>sync.Mutex</code> 实现的，对比互斥锁 <code>sync.Mutex</code>，读写锁 <code>sync.RWmutex</code> 更适合读多写少的情况。</p>
+<p><strong>示例：</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// sync.RWmutex</span></span><br><span class="line"><span class="keyword">type</span> rwCounter <span class="keyword">struct</span> &#123;</span><br><span class="line">	counter <span class="keyword">int</span></span><br><span class="line">	mux     sync.RWMutex</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *rwCounter)</span> <span class="title">Incr</span><span class="params">(n <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">	c.mux.Lock()</span><br><span class="line">	c.counter += n</span><br><span class="line">	c.mux.Unlock()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *rwCounter)</span> <span class="title">Value</span><span class="params">()</span> <span class="title">int</span></span> &#123;</span><br><span class="line">	c.mux.RLock()</span><br><span class="line">	<span class="keyword">defer</span> c.mux.RUnlock()</span><br><span class="line">	<span class="keyword">return</span> c.counter</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestRWmutex</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	c := rwCounter&#123;counter: <span class="number">0</span>&#125;</span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">1000</span>; i++ &#123;</span><br><span class="line">		<span class="keyword">go</span> c.Incr(i)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	time.Sleep(<span class="number">3</span> * time.Second)</span><br><span class="line">	fmt.Println(<span class="string">"result value:"</span>, c.Value()) <span class="comment">// result value: 499500</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="6-sync-Once"><a href="#6-sync-Once" class="headerlink" title="6. sync.Once"></a>6. sync.Once</h3><p><code>sync.Once</code> 可以保证并发情况下某一段程序只会执行一次。它适用于读取配置文件或一些初始化操作。</p>
+<p><strong>示例：</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// sync.Once</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestOnce</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> one sync.Once</span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">100</span>; i++ &#123;</span><br><span class="line">		one.Do(<span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">			fmt.Println(<span class="string">"one done"</span>)</span><br><span class="line">		&#125;)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// output:</span></span><br><span class="line"><span class="comment">// one done</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="7-atomic"><a href="#7-atomic" class="headerlink" title="7. atomic"></a>7. atomic</h3><p>go 中 <code>sync.atomic</code> 包提供了一些原子操作的工具函数，可以借助它们实现数据的修改和加载的原子操作。</p>
+<p><strong>示例：</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// atomic</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestAtomic</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> (</span><br><span class="line">		counter <span class="keyword">int64</span></span><br><span class="line">		wg      sync.WaitGroup</span><br><span class="line">	)</span><br><span class="line"></span><br><span class="line">	wg.Add(<span class="number">2</span>)</span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">2</span>; i++ &#123;</span><br><span class="line">		<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">			<span class="keyword">defer</span> wg.Done()</span><br><span class="line">			<span class="keyword">for</span> count := <span class="number">0</span>; count &lt; <span class="number">2</span>; count++ &#123;</span><br><span class="line">				atomic.AddInt64(&amp;counter, <span class="number">1</span>)</span><br><span class="line">				runtime.Gosched()</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;()</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	wg.Wait()</span><br><span class="line">	fmt.Println(<span class="string">"result counter:"</span>, counter, atomic.LoadInt64(&amp;counter))</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// output:</span></span><br><span class="line"><span class="comment">// result counter: 4 4</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p><code>sync.atomic</code> 包包括以下函数：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 原子交换</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">SwapInt32</span><span class="params">(addr *<span class="keyword">int32</span>, <span class="built_in">new</span> <span class="keyword">int32</span>)</span> <span class="params">(old <span class="keyword">int32</span>)</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">SwapInt64</span><span class="params">(addr *<span class="keyword">int64</span>, <span class="built_in">new</span> <span class="keyword">int64</span>)</span> <span class="params">(old <span class="keyword">int64</span>)</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">SwapUint32</span><span class="params">(addr *<span class="keyword">uint32</span>, <span class="built_in">new</span> <span class="keyword">uint32</span>)</span> <span class="params">(old <span class="keyword">uint32</span>)</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">SwapUint64</span><span class="params">(addr *<span class="keyword">uint64</span>, <span class="built_in">new</span> <span class="keyword">uint64</span>)</span> <span class="params">(old <span class="keyword">uint64</span>)</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">SwapUintptr</span><span class="params">(addr *<span class="keyword">uintptr</span>, <span class="built_in">new</span> <span class="keyword">uintptr</span>)</span> <span class="params">(old <span class="keyword">uintptr</span>)</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">SwapPointer</span><span class="params">(addr *unsafe.Pointer, <span class="built_in">new</span> unsafe.Pointer)</span> <span class="params">(old unsafe.Pointer)</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 原子比较并交换（只有当操作之前的值为old才进行交换操作）</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">CompareAndSwapInt32</span><span class="params">(addr *<span class="keyword">int32</span>, old, <span class="built_in">new</span> <span class="keyword">int32</span>)</span> <span class="params">(swapped <span class="keyword">bool</span>)</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">CompareAndSwapInt64</span><span class="params">(addr *<span class="keyword">int64</span>, old, <span class="built_in">new</span> <span class="keyword">int64</span>)</span> <span class="params">(swapped <span class="keyword">bool</span>)</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">CompareAndSwapUint32</span><span class="params">(addr *<span class="keyword">uint32</span>, old, <span class="built_in">new</span> <span class="keyword">uint32</span>)</span> <span class="params">(swapped <span class="keyword">bool</span>)</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">CompareAndSwapUint64</span><span class="params">(addr *<span class="keyword">uint64</span>, old, <span class="built_in">new</span> <span class="keyword">uint64</span>)</span> <span class="params">(swapped <span class="keyword">bool</span>)</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">CompareAndSwapUintptr</span><span class="params">(addr *<span class="keyword">uintptr</span>, old, <span class="built_in">new</span> <span class="keyword">uintptr</span>)</span> <span class="params">(swapped <span class="keyword">bool</span>)</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">CompareAndSwapPointer</span><span class="params">(addr *unsafe.Pointer, old, <span class="built_in">new</span> unsafe.Pointer)</span> <span class="params">(swapped <span class="keyword">bool</span>)</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 原子修改值</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">AddInt32</span><span class="params">(addr *<span class="keyword">int32</span>, delta <span class="keyword">int32</span>)</span> <span class="params">(<span class="built_in">new</span> <span class="keyword">int32</span>)</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">AddUint32</span><span class="params">(addr *<span class="keyword">uint32</span>, delta <span class="keyword">uint32</span>)</span> <span class="params">(<span class="built_in">new</span> <span class="keyword">uint32</span>)</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">AddInt64</span><span class="params">(addr *<span class="keyword">int64</span>, delta <span class="keyword">int64</span>)</span> <span class="params">(<span class="built_in">new</span> <span class="keyword">int64</span>)</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">AddUint64</span><span class="params">(addr *<span class="keyword">uint64</span>, delta <span class="keyword">uint64</span>)</span> <span class="params">(<span class="built_in">new</span> <span class="keyword">uint64</span>)</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">AddUintptr</span><span class="params">(addr *<span class="keyword">uintptr</span>, delta <span class="keyword">uintptr</span>)</span> <span class="params">(<span class="built_in">new</span> <span class="keyword">uintptr</span>)</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 原子获取值</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">LoadInt32</span><span class="params">(addr *<span class="keyword">int32</span>)</span> <span class="params">(val <span class="keyword">int32</span>)</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">LoadInt64</span><span class="params">(addr *<span class="keyword">int64</span>)</span> <span class="params">(val <span class="keyword">int64</span>)</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">LoadUint32</span><span class="params">(addr *<span class="keyword">uint32</span>)</span> <span class="params">(val <span class="keyword">uint32</span>)</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">LoadUint64</span><span class="params">(addr *<span class="keyword">uint64</span>)</span> <span class="params">(val <span class="keyword">uint64</span>)</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">LoadUintptr</span><span class="params">(addr *<span class="keyword">uintptr</span>)</span> <span class="params">(val <span class="keyword">uintptr</span>)</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">LoadPointer</span><span class="params">(addr *unsafe.Pointer)</span> <span class="params">(val unsafe.Pointer)</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 原子设定值</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">StoreInt32</span><span class="params">(addr *<span class="keyword">int32</span>, val <span class="keyword">int32</span>)</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">StoreInt64</span><span class="params">(addr *<span class="keyword">int64</span>, val <span class="keyword">int64</span>)</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">StoreUint32</span><span class="params">(addr *<span class="keyword">uint32</span>, val <span class="keyword">uint32</span>)</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">StoreUint64</span><span class="params">(addr *<span class="keyword">uint64</span>, val <span class="keyword">uint64</span>)</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">StoreUintptr</span><span class="params">(addr *<span class="keyword">uintptr</span>, val <span class="keyword">uintptr</span>)</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">StorePointer</span><span class="params">(addr *unsafe.Pointer, val unsafe.Pointer)</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="8-sync-Map"><a href="#8-sync-Map" class="headerlink" title="8. sync.Map"></a>8. sync.Map</h3><p>go 语言中并发的读写map将导致系统错误：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 并发读写操作map将导致错误</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestMap1</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	m := <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="keyword">string</span>]<span class="keyword">int</span>)</span><br><span class="line">	<span class="keyword">var</span> wg sync.WaitGroup</span><br><span class="line">	wg.Add(<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">2</span>; i++ &#123;</span><br><span class="line">		<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">			<span class="keyword">defer</span> wg.Done()</span><br><span class="line">			<span class="keyword">for</span> j := <span class="number">0</span>; j &lt; <span class="number">10</span>; j++ &#123;</span><br><span class="line">				m[strconv.Itoa(j)] = j</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;()</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	wg.Wait()</span><br><span class="line">	fmt.Println(<span class="string">"map:"</span>, m)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// output:</span></span><br><span class="line"><span class="comment">// fatal error: concurrent map writes</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p>所以要想同步安全的操作 map，可以通过互斥锁的方式，例如创建一个结构体包含 map 成员变量和一个互斥锁，也可以使用 go 自带的  <code>sync.Map</code>。它提供同步安全的读写操作。</p>
+<p><strong>示例：</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// sync.Map</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestMap2</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> m sync.Map</span><br><span class="line">	<span class="keyword">var</span> wg sync.WaitGroup</span><br><span class="line">	wg.Add(<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">2</span>; i++ &#123;</span><br><span class="line">		<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">			<span class="keyword">defer</span> wg.Done()</span><br><span class="line">			<span class="keyword">for</span> j := <span class="number">1</span>; j &lt;= <span class="number">10</span>; j++ &#123;</span><br><span class="line">				m.Store(strconv.Itoa(j), j)</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;()</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	wg.Wait()</span><br><span class="line">	val, ok := m.Load(<span class="string">"1"</span>)</span><br><span class="line">	fmt.Println(val, ok)</span><br><span class="line"></span><br><span class="line">	m.Range(<span class="function"><span class="keyword">func</span><span class="params">(k, v <span class="keyword">interface</span>&#123;&#125;)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">		fmt.Println(k, v)</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">	&#125;)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// output:</span></span><br><span class="line"><span class="comment">// 1 true</span></span><br><span class="line"><span class="comment">// 1 1</span></span><br><span class="line"><span class="comment">// 2 2</span></span><br><span class="line"><span class="comment">// 3 3</span></span><br><span class="line"><span class="comment">// 6 6</span></span><br><span class="line"><span class="comment">// 7 7</span></span><br><span class="line"><span class="comment">// 8 8</span></span><br><span class="line"><span class="comment">// 4 4</span></span><br><span class="line"><span class="comment">// 5 5</span></span><br><span class="line"><span class="comment">// 9 9</span></span><br><span class="line"><span class="comment">// 10 10</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p><code>sync.Map</code> 对外暴露了以下方法：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 获取元素值（存在返回对应(val,true)，不存在则返回(nil,false)）</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(m *Map)</span> <span class="title">Load</span><span class="params">(key <span class="keyword">interface</span>&#123;&#125;)</span> <span class="params">(value <span class="keyword">interface</span>&#123;&#125;, ok <span class="keyword">bool</span>)</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 新增元素</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(m *Map)</span> <span class="title">Store</span><span class="params">(key, value <span class="keyword">interface</span>&#123;&#125;)</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 加载或新增元素（当key存在则加载值loaded为true，不存在则设置新的值loaded为false）</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(m *Map)</span> <span class="title">LoadOrStore</span><span class="params">(key, value <span class="keyword">interface</span>&#123;&#125;)</span> <span class="params">(actual <span class="keyword">interface</span>&#123;&#125;, loaded <span class="keyword">bool</span>)</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 删除元素</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(m *Map)</span> <span class="title">Delete</span><span class="params">(key <span class="keyword">interface</span>&#123;&#125;)</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 遍历元素（如果入参函数返回bool为false则停止遍历）</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(m *Map)</span> <span class="title">Range</span><span class="params">(f <span class="keyword">func</span>(key, value <span class="keyword">interface</span>&#123;&#125;)</span> <span class="title">bool</span>)</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="9-sync-Cond"><a href="#9-sync-Cond" class="headerlink" title="9. sync.Cond"></a>9. sync.Cond</h3><p><code>sync.Cond</code> 是一个条件变量，用于特定条件下唤醒其他的 goroutine。</p>
+<p><strong>示例：</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// sync.Cond</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestCond</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	c := sync.NewCond(&amp;sync.Mutex&#123;&#125;)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">10</span>; i++ &#123;</span><br><span class="line">		<span class="keyword">go</span> listen(c)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	time.Sleep(<span class="number">3</span> * time.Second)</span><br><span class="line">	<span class="keyword">go</span> broadcast(c)</span><br><span class="line"></span><br><span class="line">	time.Sleep(<span class="number">1</span> * time.Second)</span><br><span class="line">	fmt.Println(<span class="string">"over..."</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">broadcast</span><span class="params">(c *sync.Cond)</span></span> &#123;</span><br><span class="line">	c.L.Lock()</span><br><span class="line">	c.Broadcast()</span><br><span class="line">	fmt.Println(<span class="string">"broadcast..."</span>)</span><br><span class="line">	c.L.Unlock()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">listen</span><span class="params">(c *sync.Cond)</span></span> &#123;</span><br><span class="line">	c.L.Lock()</span><br><span class="line">	c.Wait()</span><br><span class="line">	fmt.Println(<span class="string">"listen..."</span>)</span><br><span class="line">	c.L.Unlock()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// output:</span></span><br><span class="line"><span class="comment">// broadcast...</span></span><br><span class="line"><span class="comment">// listen...</span></span><br><span class="line"><span class="comment">// listen...</span></span><br><span class="line"><span class="comment">// listen...</span></span><br><span class="line"><span class="comment">// listen...</span></span><br><span class="line"><span class="comment">// listen...</span></span><br><span class="line"><span class="comment">// listen...</span></span><br><span class="line"><span class="comment">// listen...</span></span><br><span class="line"><span class="comment">// listen...</span></span><br><span class="line"><span class="comment">// listen...</span></span><br><span class="line"><span class="comment">// listen...</span></span><br><span class="line"><span class="comment">// over...</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p><code>sync.Cond</code>  包括以下方法：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 等待被唤醒</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *Cond)</span> <span class="title">Wait</span><span class="params">()</span></span> </span><br><span class="line"></span><br><span class="line"><span class="comment">// 通知一个goroutine唤醒</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *Cond)</span> <span class="title">Signal</span><span class="params">()</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 通知所有goroutine唤醒</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(c *Cond)</span> <span class="title">Broadcast</span><span class="params">()</span></span></span><br></pre></td></tr></table></figure>
+
+<p>其在创建时需要传入一个互斥锁：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewCond</span><span class="params">(l Locker)</span> *<span class="title">Cond</span></span></span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h3 id="10-sync-Pool"><a href="#10-sync-Pool" class="headerlink" title="10. sync.Pool"></a>10. sync.Pool</h3><p><code>sync.Pool</code> 一般用作临时对象池来使用，是协程安全的。其结构体和对外方法为：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Pool <span class="keyword">struct</span> &#123;</span><br><span class="line">  <span class="comment">// 防止被copy</span></span><br><span class="line">	noCopy noCopy</span><br><span class="line"></span><br><span class="line">	local     unsafe.Pointer <span class="comment">// 数组指针</span></span><br><span class="line">	localSize <span class="keyword">uintptr</span>        <span class="comment">// 数组大小</span></span><br><span class="line"></span><br><span class="line">	victim     unsafe.Pointer <span class="comment">// local from previous cycle</span></span><br><span class="line">	victimSize <span class="keyword">uintptr</span>        <span class="comment">// size of victims array</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 定义当Get()方法获取不到值时默认返回，不设置默认为nil</span></span><br><span class="line">	New <span class="function"><span class="keyword">func</span><span class="params">()</span> <span class="title">interface</span></span>&#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 添加元素</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *Pool)</span> <span class="title">Put</span><span class="params">(x <span class="keyword">interface</span>&#123;&#125;)</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 删除元素</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *Pool)</span> <span class="title">Get</span><span class="params">()</span> <span class="title">interface</span></span>&#123;&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>示例：</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// sync.Pool</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestPool</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> p sync.Pool</span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">1</span>; i &lt;= <span class="number">10</span>; i++ &#123;</span><br><span class="line">		p.Put(i)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">var</span> result []<span class="keyword">int</span></span><br><span class="line">	<span class="keyword">for</span> &#123;</span><br><span class="line">		val := p.Get()</span><br><span class="line">		<span class="keyword">if</span> val == <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="keyword">break</span></span><br><span class="line">		&#125;</span><br><span class="line">		result = <span class="built_in">append</span>(result, val.(<span class="keyword">int</span>))</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Println(<span class="string">"result:"</span>, result)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// output:</span></span><br><span class="line"><span class="comment">// result: [1 10 9 8 7 6 5 4 3 2]</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p>注意：</p>
+<ul>
+<li><code>sync.Pool</code> 主要用于临时对象池使用，协程安全；</li>
+<li><code>sync.Pool</code> 会定时清理不是永久保存的，所以不能作为类似数据库连接池来使用，</li>
+</ul>
+<h3 id="11-扩展"><a href="#11-扩展" class="headerlink" title="11. 扩展"></a>11. 扩展</h3><p><code>golang.org/x/sync</code> 提供4种扩展的工具：<code>errorgroup.Group</code>、<code>semaphore.Weighted</code>、<code>singleflight.group</code> 和 <code>syncmap.Map</code>。</p>
+<h3 id="12-Channel"><a href="#12-Channel" class="headerlink" title="12. Channel"></a>12. Channel</h3><p>go 语言中可以通过锁来保证同步安全，也可以通过在多个 goroutine 传递数据来保证同步安全，这就是一种不同的并发模式：通信顺序进程 CSP（Communication sequential processes），并且也建议使用这种方式。这种方式就是通过 <code>Channel</code> （通道）实现的。</p>
+<p><strong>1. Channel创建：</strong></p>
+<p>通过 <code>make</code> 和 <code>chan</code> 关键词实现，后面的 <code>int</code> 用于传递数据，可以是所有类型，也可以添加一个数字参数标识为通道的容量。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 无缓冲Channel</span></span><br><span class="line">ch := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 缓冲Channel</span></span><br><span class="line">ch := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>, <span class="number">5</span>)</span><br></pre></td></tr></table></figure>
+
+<p><strong>2. Channel发送和接收数据：</strong></p>
+<p><code>Channel</code> 可以进行发送和接收数据，其中发送数据只有一种格式，接收数据的格式可以有多种。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Channel发送和接受数据</span></span><br><span class="line">ch &lt;- val <span class="comment">// 发送数据</span></span><br><span class="line">val &lt;- ch <span class="comment">// 接受数据</span></span><br><span class="line">val, ok &lt;- ch <span class="comment">// 接收数据，ok标识通道是否已关闭</span></span><br><span class="line">&lt;- ch <span class="comment">// 接收数据，丢弃结果</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>3. Channel关闭：</strong></p>
+<p><code>Channel</code> 的关闭不同于 io 资源的关闭，在某些情况下可以不用主动关闭，因为垃圾收集器会自动清理。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Channel关闭</span></span><br><span class="line"><span class="built_in">close</span>(ch)</span><br></pre></td></tr></table></figure>
+
+<p><strong>4. 语法规则：</strong></p>
+<p><code>&lt;-</code> 总是优先于最左边的类型结合：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">chan</span>&lt;- <span class="keyword">chan</span> <span class="keyword">int</span>    <span class="comment">// 等价 chan&lt;- (chan int)</span></span><br><span class="line"><span class="keyword">chan</span>&lt;- &lt;-<span class="keyword">chan</span> <span class="keyword">int</span>  <span class="comment">// 等价 chan&lt;- (&lt;-chan int)</span></span><br><span class="line">&lt;-<span class="keyword">chan</span> &lt;-<span class="keyword">chan</span> <span class="keyword">int</span>  <span class="comment">// 等价 &lt;-chan (&lt;-chan int)</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="12-1-Channel类型"><a href="#12-1-Channel类型" class="headerlink" title="12.1 Channel类型"></a>12.1 Channel类型</h4><p><code>Channel</code> 包含3种类型：双向、单向只发送、单向只接收。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Channel的3种类型：</span></span><br><span class="line"><span class="comment">// 双向通道转换为单向通道是运行的，反之则不行</span></span><br><span class="line"><span class="keyword">chan</span>: 双向channel，可接受和发送数据</span><br><span class="line"><span class="keyword">chan</span>&lt;-: 单向channel，只能发送数据</span><br><span class="line">&lt;-<span class="keyword">chan</span>: 单向channel，只能接受数据</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>示例：</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// channel的3种类型</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestChannelType</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	<span class="comment">// chan: 双向channel，可接收和发送消息</span></span><br><span class="line">	c1 := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>)</span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		time.Sleep(<span class="number">100</span> * time.Millisecond)</span><br><span class="line">		c1 &lt;- <span class="number">1</span></span><br><span class="line">	&#125;()</span><br><span class="line">	fmt.Println(&lt;-c1)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// chan&lt;-: 单向channel，只能发送消息</span></span><br><span class="line">	c2 := <span class="built_in">make</span>(<span class="keyword">chan</span>&lt;- <span class="keyword">int</span>)</span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		c2 &lt;- <span class="number">2</span></span><br><span class="line">	&#125;()</span><br><span class="line">	<span class="comment">// fmt.Println(&lt;-c2) // Invalid operation: &lt;-c2 (receive from send-only type chan&lt;- int)</span></span><br><span class="line">	time.Sleep(<span class="number">100</span> * time.Millisecond)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// &lt;-chan: 单向channel，只能接受消息</span></span><br><span class="line">	c3 := <span class="built_in">make</span>(&lt;-<span class="keyword">chan</span> <span class="keyword">int</span>)</span><br><span class="line">	<span class="comment">// c3 &lt;- 3 // invalid operation: c3 &lt;- 3 (send to receive-only type &lt;-chan int)</span></span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		&lt;-c3</span><br><span class="line">	&#125;()</span><br><span class="line">	time.Sleep(<span class="number">100</span> * time.Millisecond)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="12-2-无缓冲Channel、缓冲Channel"><a href="#12-2-无缓冲Channel、缓冲Channel" class="headerlink" title="12.2 无缓冲Channel、缓冲Channel"></a>12.2 无缓冲Channel、缓冲Channel</h4><p>当创建通道时，可以省略或添加容量参数，当省略容量参数或容量参数值为0，此时为无缓冲通道，当容量大于0则是缓冲通道。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 无缓冲通道</span></span><br><span class="line">ch := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>)</span><br><span class="line">ch := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>, <span class="number">0</span>) <span class="comment">// 一般不这样使用</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 缓冲通道</span></span><br><span class="line">ch := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>, <span class="number">5</span>)</span><br></pre></td></tr></table></figure>
+
+
+
+<p><code>Channel</code> 特点：</p>
+<ul>
+<li><p><code>Channel</code> 的一般用于多个 goroutine 传递数据；</p>
+</li>
+<li><p>向一个 <code>nil Channel</code> 发送数据会一直阻塞；</p>
+</li>
+<li><p>向一个已经关闭 <code>close Channel</code> 发送数据会造成 panic 错误；</p>
+</li>
+<li><p><code>Channel</code> 关闭后，不能向其发送数据，但是依然可以从其接收数据；</p>
+</li>
+<li><p><code>Channel</code> 关闭后，无缓冲通道接收的数据为零值 + false，缓冲通道会先接收通道内已有的发送数据，当发送数据接收完毕，接收数据也为零值 + false。</p>
+</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 已关闭Channel依然可以接收数据</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestChannelReceive</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	<span class="comment">// 已关闭无缓冲Channel，关闭后接收数据为零值 + false</span></span><br><span class="line">	c1 := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>)</span><br><span class="line">	<span class="built_in">close</span>(c1)</span><br><span class="line">	val1, ok1 := &lt;-c1</span><br><span class="line">	fmt.Println(val1, ok1)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 已关闭无缓冲Channel且Channel没有数据，关闭后接收数据为零值 + false</span></span><br><span class="line">	c2 := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>, <span class="number">2</span>)</span><br><span class="line">	<span class="built_in">close</span>(c2)</span><br><span class="line">	val2, ok2 := &lt;-c2</span><br><span class="line">	fmt.Println(val2, ok2)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 已关闭无缓冲Channel且Channel没有数据，关闭后接收数据发送数据，全部数据接收完时为零值 + false</span></span><br><span class="line">	c3 := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>, <span class="number">2</span>)</span><br><span class="line">	c3 &lt;- <span class="number">3</span></span><br><span class="line">	<span class="built_in">close</span>(c3)</span><br><span class="line">	val3, ok3 := &lt;-c3</span><br><span class="line">	fmt.Println(val3, ok3)</span><br><span class="line">	val3, ok3 = &lt;-c3</span><br><span class="line">	fmt.Println(val3, ok3)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// output:</span></span><br><span class="line"><span class="comment">// 0 false</span></span><br><span class="line"><span class="comment">// 0 false</span></span><br><span class="line"><span class="comment">// 3 true</span></span><br><span class="line"><span class="comment">// 0 false</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p><code>无缓冲Channel</code> 特点：</p>
+<ul>
+<li>无缓冲通道在接收前没有能力保存任何值；</li>
+<li>无缓冲通道要求发送的 goroutine 和接收的 goroutine 同时准备好，才能完成发送和接收操作；</li>
+<li>如果发送和接收的 goroutine 没有同时准备好，不管是先发送的 goutine 还是先接收的 goroutine，都将阻塞。</li>
+</ul>
+<p><code>缓冲Channel</code> 特点：</p>
+<ul>
+<li>缓冲通道在接收前能存储一个或多个值；</li>
+<li>缓冲通道不要求 goroutine 之间必须同时完成发送和接收；</li>
+<li>当通道中没有要接收的值时，接收 goroutine 会阻塞，当通道缓冲区已满，发送 goroutine 会阻塞。</li>
+</ul>
+<p><code>缓冲Channel</code> 和 <code>无缓冲Channel</code> 区别：</p>
+<ul>
+<li>容量不同，缓冲通道容量为0，无缓冲通道容量大于0；</li>
+<li>无缓冲通道保证同步，即发送和接收的操作同时完成，无缓冲通道不能保证；</li>
+</ul>
+<p><strong>示例：</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 无缓冲channel: 将会阻塞程序</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestUnbufferedChannel</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	msg := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">string</span>)</span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		fmt.Println(<span class="string">"start..."</span>)</span><br><span class="line">		time.Sleep(<span class="number">1</span> * time.Second)</span><br><span class="line">		msg &lt;- <span class="string">"ping"</span></span><br><span class="line">	&#125;()</span><br><span class="line">	val, ok := &lt;-msg</span><br><span class="line">	fmt.Println(val, ok) <span class="comment">// ping true (将等待发送goroutine发送完成)</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 缓冲channel</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestBufferedChannel</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	msg := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">string</span>, <span class="number">2</span>)</span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		time.Sleep(<span class="number">1</span> * time.Second)</span><br><span class="line">		msg &lt;- <span class="string">"ping"</span></span><br><span class="line">		msg &lt;- <span class="string">"pong"</span></span><br><span class="line">	&#125;()</span><br><span class="line">	fmt.Println(&lt;-msg) <span class="comment">// ping</span></span><br><span class="line">	fmt.Println(&lt;-msg) <span class="comment">// pong</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 缓冲通道: 一组worker完成一组task</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestWorkerBufferedChannel</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	<span class="keyword">const</span> (</span><br><span class="line">		workerNum = <span class="number">4</span></span><br><span class="line">		taskNum   = <span class="number">10</span></span><br><span class="line">	)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">var</span> wg sync.WaitGroup</span><br><span class="line">	wg.Add(workerNum)</span><br><span class="line">	tasks := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>, taskNum)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">1</span>; i &lt;= workerNum; i++ &#123;</span><br><span class="line">		<span class="keyword">go</span> worker(tasks, i, &amp;wg)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">1</span>; i &lt;= taskNum; i++ &#123;</span><br><span class="line">		tasks &lt;- i</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="built_in">close</span>(tasks)</span><br><span class="line"></span><br><span class="line">	wg.Wait()</span><br><span class="line">	fmt.Println(<span class="string">"over..."</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">worker</span><span class="params">(tasks <span class="keyword">chan</span> <span class="keyword">int</span>, id <span class="keyword">int</span>, wg *sync.WaitGroup)</span></span> &#123;</span><br><span class="line">	<span class="keyword">defer</span> wg.Done()</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> &#123;</span><br><span class="line">		val, ok := &lt;-tasks</span><br><span class="line">		<span class="keyword">if</span> !ok &#123;</span><br><span class="line">			fmt.Printf(<span class="string">"worker: %d, shutdown\n"</span>, id)</span><br><span class="line">			<span class="keyword">break</span></span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		fmt.Printf(<span class="string">"worker: %d, start    task :%d\n"</span>, id, val)</span><br><span class="line">		time.Sleep(time.Duration(rand.Int63n(<span class="number">500</span>)) * time.Millisecond)</span><br><span class="line">		fmt.Printf(<span class="string">"worker: %d, complete task :%d\n"</span>, id, val)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="12-3-range"><a href="#12-3-range" class="headerlink" title="12.3 range"></a>12.3 range</h4><p><code>Channel</code> 支持通过 <code>for range</code> 方式取出所有发送数据，一般用于缓冲 <code>Channel</code>。需要注意的是：在遍历时如果通道没有关闭，会循环取出所有发送数据，当所有数据取完会发送 deadlock 的 panic 错误。所以一般当发送数据全部完成后关闭通道。</p>
+<p><strong>示例：</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// range</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestRange</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	c := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>, <span class="number">5</span>)</span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">5</span>; i++ &#123;</span><br><span class="line">		c &lt;- i</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="built_in">close</span>(c)</span><br><span class="line">	<span class="keyword">for</span> val := <span class="keyword">range</span> c &#123; <span class="comment">// 如果channel没有关闭，在取完所有数据后会产生panic错误：fatal error: all goroutines are asleep - deadlock!</span></span><br><span class="line">		fmt.Println(val)</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Println(<span class="string">"over..."</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="12-4-select"><a href="#12-4-select" class="headerlink" title="12.4 select"></a>12.4 select</h4><p><code>select</code> 可以处理非阻塞的数据发送、数据接收和多路选择。<code>select</code> 有多个 case 代码块，用于数据的发送和接收。当有多个 case 代码块准备好会随机选择一个 case 执行，所有 case 都没有准备好则等待。可以定义一个 default 代码块，用于所有 case 都没有准备好的情况。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// select</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestSelect</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	c1 := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>, <span class="number">2</span>)</span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		<span class="keyword">for</span> i := <span class="number">1</span>; i &lt;= <span class="number">5</span>; i++ &#123;</span><br><span class="line">			c1 &lt;- i</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="built_in">close</span>(c1)</span><br><span class="line">	&#125;()</span><br><span class="line"></span><br><span class="line">	c2 := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>, <span class="number">2</span>)</span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		<span class="keyword">for</span> c := <span class="number">101</span>; c &lt;= <span class="number">105</span>; c++ &#123;</span><br><span class="line">			c2 &lt;- c</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="built_in">close</span>(c2)</span><br><span class="line">	&#125;()</span><br><span class="line"></span><br><span class="line">	f1, f2 := <span class="literal">false</span>, <span class="literal">false</span></span><br><span class="line">	<span class="keyword">for</span> &#123;</span><br><span class="line">		<span class="keyword">if</span> f1 &amp;&amp; f2 &#123;</span><br><span class="line">			<span class="keyword">break</span></span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">select</span> &#123;</span><br><span class="line">		<span class="keyword">case</span> val, ok := &lt;-c1:</span><br><span class="line">			<span class="keyword">if</span> !ok &#123;</span><br><span class="line">				fmt.Println(<span class="string">"c1 shutdown"</span>)</span><br><span class="line">				f1 = <span class="literal">true</span></span><br><span class="line">			&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">				fmt.Println(<span class="string">"c1:"</span>, val, ok)</span><br><span class="line">			&#125;</span><br><span class="line">		<span class="keyword">case</span> val, ok := &lt;-c2:</span><br><span class="line">			<span class="keyword">if</span> !ok &#123;</span><br><span class="line">				f2 = <span class="literal">true</span></span><br><span class="line">				fmt.Println(<span class="string">"c2 shutdown"</span>)</span><br><span class="line">			&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">				fmt.Println(<span class="string">"c2:"</span>, val, ok)</span><br><span class="line">			&#125;</span><br><span class="line">		<span class="keyword">default</span>:</span><br><span class="line">			fmt.Println(<span class="string">"wait"</span>)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Println(<span class="string">"over..."</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>以上所有示例可在 <a href="https://github.com/wcig/go-study-example/tree/master/ch14_concurrent" target="_blank" rel="noopener">github</a>  查看</p>
+<p>参考：</p>
+<ul>
+<li><p><a href="https://draveness.me/golang/docs/part3-runtime/ch06-concurrency/golang-sync-primitives/" target="_blank" rel="noopener">Go同步原语与锁</a></p>
+</li>
+<li><p><a href="https://www.cnblogs.com/hlxs/p/10275303.html" target="_blank" rel="noopener">Go channel实现源码分析</a></p>
+</li>
+<li><p><a href="https://www.cnblogs.com/hlxs/p/10274186.html" target="_blank" rel="noopener">Go并发调度原理学习</a></p>
+</li>
+<li><p><a href="https://draveness.me/golang/docs/part3-runtime/ch06-concurrency/golang-channel/" target="_blank" rel="noopener">Go程序设计与实现</a></p>
+</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Golang/" rel="tag"># Golang</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/10/05/golang/25.Go%20Context/" rel="next" title="Go Context">
+                <i class="fa fa-chevron-left"></i> Go Context
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="Wcig" />
+            
+              <p class="site-author-name" itemprop="name">Wcig</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">40</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/wcig" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-并发与并行"><span class="nav-text">1. 并发与并行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-goroutine"><span class="nav-text">2. goroutine</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-sync-WaitGroup"><span class="nav-text">3. sync.WaitGroup</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-sync-Mutex"><span class="nav-text">4. sync.Mutex</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-sync-RWmutex"><span class="nav-text">5. sync.RWmutex</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-sync-Once"><span class="nav-text">6. sync.Once</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-atomic"><span class="nav-text">7. atomic</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-sync-Map"><span class="nav-text">8. sync.Map</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9-sync-Cond"><span class="nav-text">9. sync.Cond</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-sync-Pool"><span class="nav-text">10. sync.Pool</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#11-扩展"><span class="nav-text">11. 扩展</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#12-Channel"><span class="nav-text">12. Channel</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#12-1-Channel类型"><span class="nav-text">12.1 Channel类型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#12-2-无缓冲Channel、缓冲Channel"><span class="nav-text">12.2 无缓冲Channel、缓冲Channel</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#12-3-range"><span class="nav-text">12.3 range</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#12-4-select"><span class="nav-text">12.4 select</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Wcig</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
