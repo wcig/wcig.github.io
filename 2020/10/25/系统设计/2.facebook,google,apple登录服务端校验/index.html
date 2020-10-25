@@ -79,14 +79,14 @@
 
 
 
-<meta name="description" content="1. 账号系统设计简单的用户登录包括用户名,手机号,邮箱+密码登录, 创建表结构这样: 123456789CREATE TABLE &#96;user&#96; (  &#96;id&#96; varchar(60) NOT NULL COMMENT &#39;主键id&#39;,  &#96;username&#96; varchar(60) DEFAULT NULL COMMENT &#39;用户名&#39;,  &#96;phone&#96; varchar(20) DEFAULT N">
+<meta name="description" content="很多基于国外市场应用中为了方便拓展用户，会增加第三方的facebook、google和apple登录，作为服务端客户端登录时需要做一次校验，而上面三种第三方校验方式都各有差异。  1. facebook登录客户端集成 facebook登录 需要注册一个对应开发者账号并进行一些配置，这里只考虑服务端的校验。客户端集成 facebook 登录成功后，客户端可以拿到该用户的 facebook id 和">
 <meta property="og:type" content="article">
-<meta property="og:title" content="用户登录系统设计">
-<meta property="og:url" content="https://wcig.github.io/2020/10/25/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/1.%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/index.html">
+<meta property="og:title" content="facebook,google,apple登录服务端校验">
+<meta property="og:url" content="https://wcig.github.io/2020/10/25/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/2.facebook,google,apple%E7%99%BB%E5%BD%95%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%A0%A1%E9%AA%8C/index.html">
 <meta property="og:site_name" content="Wcig&#39;s Blog">
-<meta property="og:description" content="1. 账号系统设计简单的用户登录包括用户名,手机号,邮箱+密码登录, 创建表结构这样: 123456789CREATE TABLE &#96;user&#96; (  &#96;id&#96; varchar(60) NOT NULL COMMENT &#39;主键id&#39;,  &#96;username&#96; varchar(60) DEFAULT NULL COMMENT &#39;用户名&#39;,  &#96;phone&#96; varchar(20) DEFAULT N">
-<meta property="article:published_time" content="2020-10-25T03:50:00.000Z">
-<meta property="article:modified_time" content="2020-10-25T03:51:06.725Z">
+<meta property="og:description" content="很多基于国外市场应用中为了方便拓展用户，会增加第三方的facebook、google和apple登录，作为服务端客户端登录时需要做一次校验，而上面三种第三方校验方式都各有差异。  1. facebook登录客户端集成 facebook登录 需要注册一个对应开发者账号并进行一些配置，这里只考虑服务端的校验。客户端集成 facebook 登录成功后，客户端可以拿到该用户的 facebook id 和">
+<meta property="article:published_time" content="2020-10-25T04:50:00.000Z">
+<meta property="article:modified_time" content="2020-10-25T05:23:38.218Z">
 <meta property="article:author" content="Wcig">
 <meta property="article:tag" content="系统设计">
 <meta name="twitter:card" content="summary">
@@ -119,13 +119,13 @@
 
 
 
-  <link rel="canonical" href="https://wcig.github.io/2020/10/25/系统设计/1.用户登录系统设计/"/>
+  <link rel="canonical" href="https://wcig.github.io/2020/10/25/系统设计/2.facebook,google,apple登录服务端校验/"/>
 
 
 
 
 
-  <title>用户登录系统设计 | Wcig's Blog</title>
+  <title>facebook,google,apple登录服务端校验 | Wcig's Blog</title>
   
 
 
@@ -252,7 +252,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://wcig.github.io/2020/10/25/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/1.%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/">
+    <link itemprop="mainEntityOfPage" href="https://wcig.github.io/2020/10/25/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/2.facebook,google,apple%E7%99%BB%E5%BD%95%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%A0%A1%E9%AA%8C/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Wcig">
@@ -269,7 +269,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">用户登录系统设计</h1>
+          <h1 class="post-title" itemprop="name headline">facebook,google,apple登录服务端校验</h1>
         
 
         <div class="post-meta">
@@ -281,7 +281,7 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-10-25T11:50:00+08:00">
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-10-25T12:50:00+08:00">
                 2020-10-25
               </time>
             
@@ -341,55 +341,43 @@
       
 
       
-        <h4 id="1-账号系统设计"><a href="#1-账号系统设计" class="headerlink" title="1. 账号系统设计"></a>1. 账号系统设计</h4><p>简单的用户登录包括用户名,手机号,邮箱+密码登录, 创建表结构这样:</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> <span class="string">`user`</span> (</span><br><span class="line">  <span class="string">`id`</span> <span class="built_in">varchar</span>(<span class="number">60</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span> <span class="keyword">COMMENT</span> <span class="string">'主键id'</span>,</span><br><span class="line">  <span class="string">`username`</span> <span class="built_in">varchar</span>(<span class="number">60</span>) <span class="keyword">DEFAULT</span> <span class="literal">NULL</span> <span class="keyword">COMMENT</span> <span class="string">'用户名'</span>,</span><br><span class="line">  <span class="string">`phone`</span> <span class="built_in">varchar</span>(<span class="number">20</span>) <span class="keyword">DEFAULT</span> <span class="literal">NULL</span> <span class="keyword">COMMENT</span> <span class="string">'手机号'</span>,</span><br><span class="line">  <span class="string">`email`</span> <span class="built_in">varchar</span>(<span class="number">60</span>) <span class="keyword">DEFAULT</span> <span class="literal">NULL</span> <span class="keyword">COMMENT</span> <span class="string">'邮箱'</span>,</span><br><span class="line">  <span class="string">`password`</span> <span class="built_in">varchar</span>(<span class="number">60</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span> <span class="keyword">COMMENT</span> <span class="string">'密码'</span>,</span><br><span class="line">  <span class="string">`create_time`</span> <span class="built_in">bigint</span>(<span class="number">20</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span> <span class="keyword">COMMENT</span> <span class="string">'创建时间'</span>,</span><br><span class="line">  PRIMARY <span class="keyword">KEY</span> (<span class="string">`id`</span>)</span><br><span class="line">) <span class="keyword">ENGINE</span>=<span class="keyword">InnoDB</span> <span class="keyword">DEFAULT</span> <span class="keyword">CHARSET</span>=utf8;</span><br></pre></td></tr></table></figure>
+        <blockquote>
+<p>很多基于国外市场应用中为了方便拓展用户，会增加第三方的facebook、google和apple登录，作为服务端客户端登录时需要做一次校验，而上面三种第三方校验方式都各有差异。</p>
+</blockquote>
+<h4 id="1-facebook登录"><a href="#1-facebook登录" class="headerlink" title="1. facebook登录"></a>1. facebook登录</h4><p>客户端集成 <code>facebook登录</code> 需要注册一个对应开发者账号并进行一些配置，这里只考虑服务端的校验。客户端集成 facebook 登录成功后，客户端可以拿到该用户的 <code>facebook id</code> 和 <code>access token</code>，其中 facebook id 是唯一的，而 access token 则有过期时间，在服务端可以通过调用 facebook api 校验这2个参数是否吻合。</p>
+<p><strong>示例：</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 调用api</span></span><br><span class="line">https://graph.facebook.com/me?access_token=xxx</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> api响应</span></span><br><span class="line">&#123;</span><br><span class="line">    "name": "xxx",</span><br><span class="line">    "id": "1001377xxx32164"</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>查询结果为:</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">| id | username | phone | email | password | create_time   |</span><br><span class="line">+<span class="comment">----+----------+-------+-------+----------+---------------+</span></span><br><span class="line">| U1 | tom      | NULL  | NULL  | 123456   | 1571412373000 |</span><br><span class="line">| U2 | jerry    | NULL  | NULL  | 123456   | 1571412417000 |</span><br></pre></td></tr></table></figure>
+<p>通过以上示例，可以通过 access token 获取用户的 facebook id 和 name，校验返回的 facebook id 是否与客户端传过来的一致即可。</p>
+<h4 id="2-google登录"><a href="#2-google登录" class="headerlink" title="2. google登录"></a>2. google登录</h4><p><code>google登录</code> 跟 facebook 登录也是类似，客户端登录 google 成功后，可以拿到用户的 google id、access token 和 email，其中 google id 是唯一的，可作为服务端数据库唯一id。</p>
+<p><strong>示例：</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 调用api</span></span><br><span class="line">https://oauth2.googleapis.com/tokeninfo?id_token=xxx</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> api响应</span></span><br><span class="line">&#123;</span><br><span class="line">    "name": "xxx",</span><br><span class="line">    "sub": "xxx"，</span><br><span class="line">    "email": "xxx",</span><br><span class="line">    "picture": "xxx",</span><br><span class="line">    "local": "xxx"</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>如果需要新增 facebook, google 登录, 应该怎样集成进来?</p>
-<p>通过 app 集成 facebook, google 登录后, 可以拿到 facebook_id, facebook_token, google_id, google_token, 其中 facebook_id/google_id 跟你的 facebook/google 账号绑定不变, facebook_token/google_token 则存在过期失效的情况. 一般情况下, 服务端在拿到第三方的 id 和 token 后, 可以请求第三方的 token 校验 api 校验该 id 是否对应 token, 所以需要在数据库中保存第三方 id.</p>
-<p>如果集成 facebook 和 google 登录, 则扩展表结构为:</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">| id | username | phone | email | password | create_time   | facebook_id | google_id |</span><br><span class="line">+<span class="comment">----+----------+-------+-------+----------+---------------+-------------+-----------+</span></span><br><span class="line">| U1 | tom      | NULL  | NULL  | 123456   | 1571412373000 | NULL        | NULL      |</span><br><span class="line">| U2 | jerry    | NULL  | NULL  | 123456   | 1571412417000 | NULL        | NULL      |</span><br></pre></td></tr></table></figure>
-
-<p>但是如果 user 表用户的基本信息存在较多字段, 这个时候每新增一种方式都需要修改表结构还是比较麻烦, 那么可以将一个表拆分成2个表:</p>
-<p>一个用户基本信息表 user_profile:</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">| id | name  | create_time   |</span><br><span class="line">+<span class="comment">----+-------+---------------+</span></span><br><span class="line">| U1 | tom   | 1571412373000 |</span><br><span class="line">| U2 | jerry | 1571412417000 |</span><br></pre></td></tr></table></figure>
-
-<p>一个用户鉴权登录表 user_auth:</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">| id | user_id | username | phone | email | facebook_id | google_id | password |</span><br><span class="line">+<span class="comment">----+---------+----------+-------+-------+-------------+-----------+----------+</span></span><br><span class="line">|  1 | U1      | tom      | NULL  | NULL  | NULL        | NULL      | 123456   |</span><br><span class="line">|  2 | U2      | jerry    | NULL  | NULL  | NULL        | NULL      | 123456   |</span><br></pre></td></tr></table></figure>
-
+<p>其中 <code>sub</code> 即为用户的 google id，我们只需要校验该参数是否与客户端请求的 google id 一致，同样也是使用该字段作为服务端用户表的唯一id。</p>
+<h4 id="3-apple登录"><a href="#3-apple登录" class="headerlink" title="3. apple登录"></a>3. apple登录</h4><p><code>apple登录</code> 相较于 facebook 和 google 要复杂一点，其采用的是 jwt 方式。</p>
+<h5 id="3-1-获取客户端请求参数"><a href="#3-1-获取客户端请求参数" class="headerlink" title="3.1 获取客户端请求参数"></a>3.1 获取客户端请求参数</h5><p>客户端通过 apple 登录成功后可以获取到如下参数，其中 <code>id</code>、<code>authorization_code</code> 用于服务端的校验。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">type AppleLoginReq struct &#123;</span><br><span class="line">	Id                string `json:"id" binding:"required"`</span><br><span class="line">	Name              string `json:"name"`</span><br><span class="line">	Email             string `json:"email"`</span><br><span class="line">	AuthorizationCode string `json:"authorization_code" binding:"required"`</span><br><span class="line">	IdentityToken     string `json:"identity_token" binding:"required"`</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 
-<p>单表设计:</p>
+
+<h5 id="3-2-生成秘钥"><a href="#3-2-生成秘钥" class="headerlink" title="3.2 生成秘钥"></a>3.2 生成秘钥</h5><p>apple 的 token 校验需要生成一个秘钥 <code>client secret</code> 用于请求校验接口。生成秘钥的方式可以通过参考文档。其中需要通过 apple 开发者账号平台获取以下参数：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">clientId       = "xxx"</span><br><span class="line">kid            = "xxx"</span><br><span class="line">iss            = "xxx"</span><br><span class="line">secret         = "-----BEGIN PRIVATE KEY-----\nxxx\n-----END PRIVATE KEY-----"</span><br><span class="line">effectDuration = xxx</span><br></pre></td></tr></table></figure>
+
+
+
+<h5 id="3-3-校验token"><a href="#3-3-校验token" class="headerlink" title="3.3 校验token"></a>3.3 校验token</h5><p>通过客户端请求的 <code>code</code>  和配置的 <code>client_id</code>，以及上一步生成的 <code>client_secret</code> 即可校验token，其中 <code>grant_type</code> 标识我们采用 <code>authorization_code</code> 方式。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 请求api</span></span><br><span class="line">curl -v POST "https://appleid.apple.com/auth/token" \</span><br><span class="line">-H 'content-type: application/x-www-form-urlencoded' \</span><br><span class="line">-d 'client_id=CLIENT_ID' \</span><br><span class="line">-d 'client_secret=CLIENT_SECRET' \</span><br><span class="line">-d 'code=CODE' \</span><br><span class="line">-d 'grant_type=authorization_code'</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> api响应</span></span><br><span class="line">type ValidResponse struct &#123;</span><br><span class="line">	AccessToken  string `json:"access_token"`</span><br><span class="line">	TokenType    string `json:"token_type"`</span><br><span class="line">	ExpiresIn    int    `json:"expires_in"`</span><br><span class="line">	RefreshToken string `json:"refresh_token"`</span><br><span class="line">	IdToken      string `json:"id_token"`</span><br><span class="line">	Error        string `json:"error"`</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在获取到响应后，可以通过 <code>jwt</code> 解码方式获取到用户的 <code>sub</code> 即 <code>apple id</code> ，与客户端请求的 id 做校验即完成了服务端校验。</p>
+<p>如果你使用的是 go 语言可以参考 github 的这2个项目：</p>
 <ul>
-<li>优势: 一次 sql 查询可以把用户所有信息查询出来</li>
-<li>劣势: 如果需要新增登录方式, 就需要不断的新增字段, 当原有字段较多且数据达到一定量, 新增字段比较耗时和耗费性能</li>
+<li><a href="https://github.com/dgrijalva/jwt-go" target="_blank" rel="noopener">https://github.com/dgrijalva/jwt-go</a></li>
+<li><a href="https://github.com/tideland/gorest" target="_blank" rel="noopener">https://github.com/tideland/gorest</a></li>
+<li><a href="https://github.com/Timothylock/go-signin-with-apple" target="_blank" rel="noopener">https://github.com/Timothylock/go-signin-with-apple</a></li>
 </ul>
-<p>双表设计:</p>
-<ul>
-<li>优势: 方便扩展登录方式, 表功能划分更清晰</li>
-<li>劣势: 需要查询用户手机号, 邮箱等字段时, 需要做两次查询, 同时数据库入库需要两张表都插入且保证一致性</li>
-</ul>
-<p>疑问:</p>
-<ul>
-<li>类似手机号, 邮箱这些也属于用户基本信息的, 采用双表设计, 是否也需要写入到 user_profile 中</li>
-<li>在面对账号绑定手机号, 绑定第三方社交账号时, 用户表应该怎样处理</li>
-</ul>
-<h4 id="2-密码加密"><a href="#2-密码加密" class="headerlink" title="2. 密码加密"></a>2. 密码加密</h4><p>为了安全考虑, 数据库一般不存储明文密码, 因为这样可以保证被拖库也不会导致密码的泄露. 那么这就涉及到密码的加密.</p>
-<p>常用的密码加密算法包括: MD5, SHA256, SHA512.</p>
-<p>如果只采取一次加密的话, 可以通过对简单密码做类似加密, 然后比对密码破解.</p>
-<p>所以一般采用2次加密 + 加盐的方式: (加盐就是添加一段字符)</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">MD5(MD5(password) + salt)</span><br><span class="line">SHA256(SHA256(password) + salt)</span><br><span class="line">SHA512(SHA512(password) + salt)</span><br></pre></td></tr></table></figure>
-
-<p>也可以考虑组合的方式:</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SHA256(MD5(password) + salt)</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
-
-<p>其中加盐的字符选择, 可以是一段固定的字符串, 也可以是 user_id 这样字符串的一段加上一个其他字符串.</p>
-<p>参考:</p>
-<p><a href="https://www.liaoxuefeng.com/article/1029274073038464" target="_blank" rel="noopener">1. 设计一个可扩展的用户登录系统</a></p>
-<p><a href="http://www.xttblog.com/?p=986" target="_blank" rel="noopener">2. 为什么要在MD5加密的密码中加“盐”</a></p>
-<p><a href="https://www.zhihu.com/question/20299384" target="_blank" rel="noopener">3. 加盐密码保存的最通用方法是？</a></p>
+<p>参考：<br><a href="https://developers.facebook.com/docs/graph-api/using-graph-api/" target="_blank" rel="noopener">1. Facebook api</a></p>
+<p><a href="https://developers.google.com/identity/sign-in/android/backend-auth?hl=zh-cn" target="_blank" rel="noopener">2. Google Sign-in</a></p>
+<p><a href="https://developer.apple.com/documentation/sign_in_with_apple/generate_and_validate_tokens" target="_blank" rel="noopener">3. Apple generate and validate tokens</a></p>
 
       
     </div>
@@ -420,8 +408,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2020/10/05/golang/13.Go%E5%B9%B6%E5%8F%91/" rel="next" title="Go并发">
-                <i class="fa fa-chevron-left"></i> Go并发
+              <a href="/2020/10/25/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/1.%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/" rel="next" title="用户登录系统设计">
+                <i class="fa fa-chevron-left"></i> 用户登录系统设计
               </a>
             
           </div>
@@ -429,10 +417,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2020/10/25/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/2.facebook,google,apple%E7%99%BB%E5%BD%95%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%A0%A1%E9%AA%8C/" rel="prev" title="facebook,google,apple登录服务端校验">
-                facebook,google,apple登录服务端校验 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -578,7 +562,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-账号系统设计"><span class="nav-text">1. 账号系统设计</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-密码加密"><span class="nav-text">2. 密码加密</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-facebook登录"><span class="nav-text">1. facebook登录</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-google登录"><span class="nav-text">2. google登录</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-apple登录"><span class="nav-text">3. apple登录</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#3-1-获取客户端请求参数"><span class="nav-text">3.1 获取客户端请求参数</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-2-生成秘钥"><span class="nav-text">3.2 生成秘钥</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-3-校验token"><span class="nav-text">3.3 校验token</span></a></li></ol></li></ol></div>
             
 
           </div>
